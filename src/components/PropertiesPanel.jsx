@@ -64,10 +64,10 @@ const PropertiesPanel = ({
                 <div className="space-y-1 mb-2 pb-2 border-b border-gray-400">
                   <label className="text-xs font-bold flex items-center gap-1"><ArrowRightFromLine size={12}/> Padding (px)</label>
                   <div className="grid grid-cols-2 gap-1">
-                    <input type="number" value={selectedElement.style.paddingTop || 0} onChange={(e) => updateStyle('paddingTop', parseInt(e.target.value))} className="w-full text-[10px] border border-black p-1" title="Top" />
-                    <input type="number" value={selectedElement.style.paddingRight || 0} onChange={(e) => updateStyle('paddingRight', parseInt(e.target.value))} className="w-full text-[10px] border border-black p-1" title="Right" />
-                    <input type="number" value={selectedElement.style.paddingBottom || 0} onChange={(e) => updateStyle('paddingBottom', parseInt(e.target.value))} className="w-full text-[10px] border border-black p-1" title="Bottom" />
-                    <input type="number" value={selectedElement.style.paddingLeft || 0} onChange={(e) => updateStyle('paddingLeft', parseInt(e.target.value))} className="w-full text-[10px] border border-black p-1" title="Left" />
+                    <div><label className="text-[8px] block">Top</label><input type="number" value={selectedElement.style.paddingTop || 0} onChange={(e) => updateStyle('paddingTop', parseInt(e.target.value))} className="w-full text-[10px] border border-black p-1" /></div>
+                    <div><label className="text-[8px] block">Right</label><input type="number" value={selectedElement.style.paddingRight || 0} onChange={(e) => updateStyle('paddingRight', parseInt(e.target.value))} className="w-full text-[10px] border border-black p-1" /></div>
+                    <div><label className="text-[8px] block">Bottom</label><input type="number" value={selectedElement.style.paddingBottom || 0} onChange={(e) => updateStyle('paddingBottom', parseInt(e.target.value))} className="w-full text-[10px] border border-black p-1" /></div>
+                    <div><label className="text-[8px] block">Left</label><input type="number" value={selectedElement.style.paddingLeft || 0} onChange={(e) => updateStyle('paddingLeft', parseInt(e.target.value))} className="w-full text-[10px] border border-black p-1" /></div>
                   </div>
                 </div>
                 <div className="space-y-1">
@@ -187,10 +187,10 @@ const PropertiesPanel = ({
             </div>
             <div className="space-y-1 mb-2 pb-2 border-b border-gray-400"><label className="text-xs font-bold flex items-center gap-1"><ArrowRightFromLine size={12}/> Padding (px)</label>
               <div className="grid grid-cols-2 gap-1">
-                <input type="number" value={selectedElement.style.paddingTop || 0} onChange={(e) => updateStyle('paddingTop', parseInt(e.target.value))} className="w-full text-[10px] border border-black p-1" title="Top" />
-                <input type="number" value={selectedElement.style.paddingRight || 0} onChange={(e) => updateStyle('paddingRight', parseInt(e.target.value))} className="w-full text-[10px] border border-black p-1" title="Right" />
-                <input type="number" value={selectedElement.style.paddingBottom || 0} onChange={(e) => updateStyle('paddingBottom', parseInt(e.target.value))} className="w-full text-[10px] border border-black p-1" title="Bottom" />
-                <input type="number" value={selectedElement.style.paddingLeft || 0} onChange={(e) => updateStyle('paddingLeft', parseInt(e.target.value))} className="w-full text-[10px] border border-black p-1" title="Left" />
+                <div><label className="text-[8px] block">Top</label><input type="number" value={selectedElement.style.paddingTop || 0} onChange={(e) => updateStyle('paddingTop', parseInt(e.target.value))} className="w-full text-[10px] border border-black p-1" /></div>
+                <div><label className="text-[8px] block">Right</label><input type="number" value={selectedElement.style.paddingRight || 0} onChange={(e) => updateStyle('paddingRight', parseInt(e.target.value))} className="w-full text-[10px] border border-black p-1" /></div>
+                <div><label className="text-[8px] block">Bottom</label><input type="number" value={selectedElement.style.paddingBottom || 0} onChange={(e) => updateStyle('paddingBottom', parseInt(e.target.value))} className="w-full text-[10px] border border-black p-1" /></div>
+                <div><label className="text-[8px] block">Left</label><input type="number" value={selectedElement.style.paddingLeft || 0} onChange={(e) => updateStyle('paddingLeft', parseInt(e.target.value))} className="w-full text-[10px] border border-black p-1" /></div>
               </div>
             </div>
 
