@@ -1,0 +1,235 @@
+export const generateExportCode = (elements, bgImage, bgMusic, cursor, pageTitle, pageHeight, pagePadding, pageMargin, pageColor) => {
+  const allElements = elements;
+  const rootElements = elements.filter(el => !el.parentId);
+
+  const getElementStyle = (el) => {
+    const isChild = !!el.parentId;
+    let extraCss = '';
+
+    // Core Layout
+    if (el.type === 'flex') {
+      extraCss += `
+        display: flex;
+        flex-direction: ${el.flexDirection || 'row'};
+        justify-content: ${el.justifyContent || 'flex-start'};
+        align-items: ${el.alignItems || 'stretch'};
+        gap: ${el.gap || 0}px;
+        flex-wrap: wrap;
+      `;
+    } else if (el.type === 'marquee' || el.type === 'button' || el.type === 'counter') {
+      extraCss += 'display: flex; align-items: center; justify-content: center;';
+    } else if (el.type === 'table') {
+        extraCss += `border-collapse: collapse;`;
+    }
+
+    if (el.type !== 'flex' && el.style.verticalAlign && el.style.verticalAlign !== 'top') {
+        extraCss += `
+            display: flex;
+            flex-direction: column;
+            justify-content: ${el.style.verticalAlign === 'middle' ? 'center' : 'flex-end'};
+        `;
+    }
+
+    if (isChild) {
+        if (el.flexGrow) extraCss += 'flex-grow: 1;';
+        if (el.fullHeight) extraCss += 'height: 100%;';
+        if (el.fullWidth) extraCss += 'align-self: stretch; width: 100%;';
+    }
+
+    const positionCss = isChild ? `
+        position: relative;
+        left: auto; top: auto;
+    ` : `
+        position: absolute;
+        left: ${el.fullWidth ? pagePadding + 'px' : el.x + 'px'};
+        top: ${el.y}px;
+        z-index: ${el.zIndex};
+    `;
+
+    const widthCss = el.fullWidth ? `width: calc(100% - ${pagePadding * 2}px);` : (el.width ? `width: ${el.width}px;` : '');
+    const heightCss = (isChild && el.fullHeight) ? '' : (el.height ? `height: ${el.height}px;` : '');
+
+    const paddingCss = `padding: ${el.style.paddingTop || 0}px ${el.style.paddingRight || 0}px ${el.style.paddingBottom || 0}px ${el.style.paddingLeft || 0}px;`;
+
+    // Divider Specific Style
+    if (el.type === 'hr') {
+        return `
+            #${el.id} {
+                box-sizing: border-box;
+                ${positionCss}
+                ${widthCss}
+                height: ${el.height}px;
+                background-color: ${el.style.backgroundColor || '#000000'};
+                ${paddingCss}
+                border: none;
+                margin: 0;
+                background-clip: content-box;
+            }
+        `;
+    }
+
+    // Side-specific Borders
+    const borderCss = `
+        border-top: ${el.style.borderTopWidth || 0}px ${el.style.borderStyle || 'solid'} ${el.style.borderColor || '#000000'};
+        border-right: ${el.style.borderRightWidth || 0}px ${el.style.borderStyle || 'solid'} ${el.style.borderColor || '#000000'};
+        border-bottom: ${el.style.borderBottomWidth || 0}px ${el.style.borderStyle || 'solid'} ${el.style.borderColor || '#000000'};
+        border-left: ${el.style.borderLeftWidth || 0}px ${el.style.borderStyle || 'solid'} ${el.style.borderColor || '#000000'};
+    `;
+
+    // Background Gradient Handling
+    let backgroundStyle = `background-color: ${el.style.backgroundColor || 'transparent'};`;
+    if (el.style.bgGradientEnabled) {
+        backgroundStyle = `background: linear-gradient(${el.style.bgGradientAngle || 0}deg, ${el.style.bgGradientStart || '#ffffff'}, ${el.style.bgGradientEnd || '#000000'});`;
+    }
+
+    // Text Color / Gradient Handling
+    let colorStyle = `color: ${el.style.color || '#000000'};`;
+    if (el.style.textGradientEnabled) {
+        colorStyle = `
+            background: linear-gradient(${el.style.textGradientAngle || 0}deg, ${el.style.textGradientStart || '#ffffff'}, ${el.style.textGradientEnd || '#000000'});
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
+        `;
+    }
+
+    const tShadow = el.style.textShadowEnabled
+        ? `${el.style.textShadowX || 2}px ${el.style.textShadowY || 2}px ${el.style.textShadowBlur || 0}px ${el.style.textShadowColor || '#000000'}`
+        : 'none';
+
+    return `
+      #${el.id} {
+        box-sizing: border-box;
+        ${positionCss}
+        display: ${el.style.display || 'block'};
+        ${widthCss}
+        ${heightCss}
+        overflow: hidden;
+        ${backgroundStyle}
+        ${colorStyle}
+        ${borderCss}
+        ${el.style.borderRadius ? `border-radius: ${el.style.borderRadius}px;` : ''}
+        ${el.style.fontFamily ? `font-family: ${el.style.fontFamily};` : ''}
+        ${el.style.fontSize ? `font-size: ${el.style.fontSize}px;` : ''}
+        ${el.style.textAlign ? `text-align: ${el.style.textAlign};` : ''}
+        ${paddingCss}
+        font-weight: ${el.style.fontWeight || 'normal'};
+        font-style: ${el.style.fontStyle || 'normal'};
+        text-decoration: ${el.style.textDecoration || 'none'};
+        text-transform: ${el.style.textTransform || 'none'};
+        letter-spacing: ${el.style.letterSpacing || 0}px;
+        line-height: ${el.style.lineHeight || 1.2};
+        text-shadow: ${tShadow};
+        transform: rotate(${el.rotation || 0}deg) skew(${el.skewX || 0}deg, ${el.skewY || 0}deg);
+        opacity: ${el.opacity || 1};
+        ${el.isBlinking ? `animation: blinker ${el.blinkSpeed || 1}s linear infinite;` : ''}
+        ${extraCss}
+      }
+    `;
+  };
+
+  const styles = elements.map(el => getElementStyle(el)).join('\n');
+
+  const renderElementHtml = (el) => {
+    let content = '';
+    const children = allElements.filter(child => child.parentId === el.id);
+    children.sort((a,b) => a.zIndex - b.zIndex);
+
+    if (el.type === 'flex') {
+      content = children.map(child => renderElementHtml(child)).join('\n');
+    } else if (el.type === 'table') {
+        const rows = el.rows || 2;
+        const cols = el.cols || 2;
+        const gap = el.gap || 0;
+        for (let r = 0; r < rows; r++) {
+            content += '<tr>';
+            for (let c = 0; c < cols; c++) {
+                const child = children.find(ch => ch.tableCell === `${r}-${c}`);
+                let cellInner = '&nbsp;';
+                if (child) {
+                    cellInner = renderElementHtml(child);
+                }
+                const borderStyle = el.style.borderWidth ? `border: 1px solid ${el.style.borderColor};` : '';
+                content += `<td style="${borderStyle} padding: ${gap}px; vertical-align: top;">${cellInner}</td>`;
+            }
+            content += '</tr>';
+        }
+    } else {
+        if (el.type === 'text') { content = String(el.content || ""); }
+        else if (el.type === 'image') { content = `<img src="${el.src}" alt="img" style="object-fit: cover; width: 100%; height: 100%;" />`; }
+        else if (el.type === 'marquee') { content = `<marquee scrollamount="5" style="width: 100%;">${String(el.content || "")}</marquee>`; }
+        else if (el.type === 'button') { content = String(el.content || ""); }
+        else if (el.type === 'hr') { content = ''; }
+        else if (el.type === 'counter') { content = `004521`; }
+        else if (el.type === 'webring') {
+            content = `
+                <div style="display:flex; flex-direction:column; height:100%; align-items:center; justify-content:center; border:2px outset white; padding:2px;">
+                <div style="font-weight:bold; margin-bottom:4px;">${String(el.content || "")}</div>
+                <div style="display:flex; gap:10px; font-size:12px;">
+                    <a href="#">&lt; Prev</a>
+                    <a href="#">Hub</a>
+                    <a href="#">Next &gt;</a>
+                </div>
+                </div>
+            `;
+        } else if (el.type === 'guestbook') {
+            content = `
+                <div style="padding:10px; height:100%; overflow:auto;">
+                <div style="text-align:center; font-weight:bold; margin-bottom:10px;">${String(el.content || "")}</div>
+                <div id="msgs_${el.id}" style="margin-top:10px; text-align:left; font-size:0.9em;">
+                    <div style="border-bottom:1px dashed #999; margin-bottom:5px;"><b>CoolGuy99:</b> Awesome site!!</div>
+                </div>
+                </div>
+            `;
+        }
+    }
+
+    const tag = (el.type === 'hr' || el.type === 'table') ? 'div' : (el.tagName || 'div');
+    if (el.href && el.type !== 'guestbook') {
+      // FIX: Use inherit to ensure #id styles flow into the anchor correctly
+      return `<a id="${el.id}" href="${el.href}" target="_blank">${content}</a>`;
+    }
+    return `<${tag} id="${el.id}">${content}</${tag}>`;
+  };
+
+  const htmlContent = rootElements.map(el => renderElementHtml(el)).join('\n');
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>${pageTitle || 'My Y2K Website'}</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: ${pageMargin}px;
+      padding: 0;
+      width: calc(100vw - ${pageMargin * 2}px);
+      min-height: ${pageHeight}px;
+      overflow-x: hidden;
+      background-color: ${pageColor};
+      ${bgImage ? `background-image: url('${bgImage}');` : ''}
+      background-size: cover;
+      ${cursor ? `cursor: url('${cursor}'), auto;` : ''}
+    }
+    .page-wrapper {
+        position: relative;
+        padding: ${pagePadding}px;
+        min-height: ${pageHeight}px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    a { color: inherit; }
+    @keyframes blinker { 50% { opacity: 0; } }
+    .blink-text { animation: blinker 1s linear infinite; }
+    ${styles}
+  </style>
+</head>
+<body>
+  <div class="page-wrapper">
+    ${htmlContent}
+  </div>
+</body>
+</html>`;
+};
