@@ -1,31 +1,35 @@
 # ==========================================
-# Stage 1: Dependencies & Build
+# Stage 1: Build the React/Vite App
 # ==========================================
 FROM oven/bun:alpine AS builder
 WORKDIR /app
 
-# Copy only package.json and lockfile to leverage Docker layer caching
-# The wildcard (*) ensures it doesn't fail if bun.lockb doesn't exist yet
-COPY package.json bun.lockb* ./
-
 # Install dependencies
-# NOTE: If this is for production, change to: RUN bun install --production
-RUN bun install --production
+COPY package.json bun.lockb* ./
+RUN bun install --frozen-lockfile
 
-# ==========================================
-# Stage 2: Final Runtime Image
-# ==========================================
-FROM oven/bun:alpine
-WORKDIR /app
-
-# Copy the installed node_modules from the builder stage
-COPY --from=builder /app/node_modules ./node_modules
-
-# Copy the rest of your application code
+# Copy your source code
 COPY . .
 
-# Expose the port your app runs on (change 3000 if needed)
-EXPOSE 5173
+# Build the frontend (this usually creates a 'dist' or 'build' folder)
+# If your build command is different in package.json, update it here!
+RUN bun run build
 
-# Start the application
-CMD ["bun", "run", "dev"]
+# ==========================================
+# Stage 2: Serve with Nginx (Ultra Small)
+# ==========================================
+# Nginx Alpine is incredibly small (under 50MB disk usage)
+FROM nginx:alpine
+
+# Remove the default Nginx welcome page
+RUN rm -rf /usr/share/nginx/html/*
+
+# Copy the built static files from the builder stage
+# NOTE: Change '/app/dist' to '/app/build' if that's what your bundler outputs
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Expose port 80 (standard HTTP port)
+EXPOSE 80
+
+# Start Nginx
+CMD ["nginx", "-g", "daemon off;"]
