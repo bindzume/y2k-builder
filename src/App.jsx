@@ -5,6 +5,7 @@ import { generateExportCode } from './utils/exportGenerator';
 import LeftSidebar from './components/LeftSidebar';
 import Canvas from './components/Canvas';
 import PropertiesPanel from './components/PropertiesPanel';
+import localforage from 'localforage';
 
 const PROJECTS_STORAGE_KEY = 'y2k-builder-projects';
 const CURRENT_PROJECT_KEY = 'y2k-builder-current-project';
@@ -74,70 +75,78 @@ export default function App() {
   };
 
   // Initialize projects from localStorage
+// Initialize projects from localForage (with localStorage migration)
   useEffect(() => {
-    try {
-      // Check for old single-project format and migrate
-      const oldSave = localStorage.getItem(STORAGE_KEY);
-      let loadedProjects = {};
-      let loadedCurrentId = null;
+    const initializeStorage = async () => {
+      try {
+        let loadedProjects = {};
+        let loadedCurrentId = null;
 
-      const savedProjects = localStorage.getItem(PROJECTS_STORAGE_KEY);
-      const savedCurrentId = localStorage.getItem(CURRENT_PROJECT_KEY);
+        // 1. Try fetching from localForage (IndexedDB)
+        const savedProjects = await localforage.getItem(PROJECTS_STORAGE_KEY);
+        const savedCurrentId = await localforage.getItem(CURRENT_PROJECT_KEY);
 
-      if (savedProjects) {
-        loadedProjects = JSON.parse(savedProjects);
-        loadedCurrentId = savedCurrentId;
-      } else if (oldSave) {
-        // Migrate old single project
-        const oldData = JSON.parse(oldSave);
-        const projectId = `project_${Date.now()}`;
-        loadedProjects = {
-          [projectId]: {
-            id: projectId,
-            name: oldData.pageTitle || 'My Y2K Website',
-            data: oldData,
-            lastModified: Date.now()
+        if (savedProjects) {
+          loadedProjects = savedProjects; // NO JSON.parse needed!
+          loadedCurrentId = savedCurrentId;
+        } else {
+          // 2. Fallback: Migrate from old localStorage to localForage
+          const legacyProjects = localStorage.getItem(PROJECTS_STORAGE_KEY);
+          const oldSave = localStorage.getItem(STORAGE_KEY);
+
+          if (legacyProjects) {
+            loadedProjects = JSON.parse(legacyProjects);
+            loadedCurrentId = localStorage.getItem(CURRENT_PROJECT_KEY);
+            // Save to new storage and clear old
+            await localforage.setItem(PROJECTS_STORAGE_KEY, loadedProjects);
+            await localforage.setItem(CURRENT_PROJECT_KEY, loadedCurrentId);
+            localStorage.removeItem(PROJECTS_STORAGE_KEY);
+            localStorage.removeItem(CURRENT_PROJECT_KEY);
+          } else if (oldSave) {
+            const oldData = JSON.parse(oldSave);
+            const projectId = `project_${Date.now()}`;
+            loadedProjects = {
+              [projectId]: {
+                id: projectId, name: oldData.pageTitle || 'My Y2K Website', data: oldData, lastModified: Date.now()
+              }
+            };
+            loadedCurrentId = projectId;
+            await localforage.setItem(PROJECTS_STORAGE_KEY, loadedProjects);
+            await localforage.setItem(CURRENT_PROJECT_KEY, loadedCurrentId);
+            localStorage.removeItem(STORAGE_KEY);
           }
-        };
-        loadedCurrentId = projectId;
-        localStorage.removeItem(STORAGE_KEY); // Remove old format
-      }
-
-      // If no projects exist, create a default one
-      if (Object.keys(loadedProjects).length === 0) {
-        const projectId = `project_${Date.now()}`;
-        loadedProjects = {
-          [projectId]: {
-            id: projectId,
-            name: 'My Y2K Website',
-            data: getCurrentProjectData(),
-            lastModified: Date.now()
-          }
-        };
-        loadedCurrentId = projectId;
-      }
-
-      setProjects(loadedProjects);
-      setCurrentProjectId(loadedCurrentId);
-
-      if (loadedCurrentId && loadedProjects[loadedCurrentId]) {
-        loadProjectData(loadedProjects[loadedCurrentId].data);
-      }
-    } catch (e) {
-      console.error("Failed to load projects", e);
-      // Create default project on error
-      const projectId = `project_${Date.now()}`;
-      const defaultProjects = {
-        [projectId]: {
-          id: projectId,
-          name: 'My Y2K Website',
-          data: getCurrentProjectData(),
-          lastModified: Date.now()
         }
-      };
-      setProjects(defaultProjects);
-      setCurrentProjectId(projectId);
-    }
+
+        // 3. Create default if absolutely nothing exists
+        if (Object.keys(loadedProjects).length === 0) {
+          const projectId = `project_${Date.now()}`;
+          loadedProjects = {
+            [projectId]: {
+              id: projectId, name: 'My Y2K Website', data: getCurrentProjectData(), lastModified: Date.now()
+            }
+          };
+          loadedCurrentId = projectId;
+          await localforage.setItem(PROJECTS_STORAGE_KEY, loadedProjects);
+          await localforage.setItem(CURRENT_PROJECT_KEY, loadedCurrentId);
+        }
+
+        setProjects(loadedProjects);
+        setCurrentProjectId(loadedCurrentId);
+        if (loadedCurrentId && loadedProjects[loadedCurrentId]) {
+          loadProjectData(loadedProjects[loadedCurrentId].data);
+        }
+      } catch (e) {
+        console.error("Failed to load projects", e);
+        // Default error fallback
+        const projectId = `project_${Date.now()}`;
+        setProjects({
+          [projectId]: { id: projectId, name: 'Error Recovery', data: getCurrentProjectData(), lastModified: Date.now() }
+        });
+        setCurrentProjectId(projectId);
+      }
+    };
+
+    initializeStorage();
   }, []);
 
   // Define saveProject before using it in useEffect
@@ -170,8 +179,8 @@ export default function App() {
         }
       };
 
-      localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(updatedProjects));
-      localStorage.setItem(CURRENT_PROJECT_KEY, currentProjectId);
+      localforage.setItem(PROJECTS_STORAGE_KEY, updatedProjects);
+      localforage.setItem(CURRENT_PROJECT_KEY, currentProjectId);
 
       return updatedProjects;
     });
@@ -352,8 +361,8 @@ export default function App() {
     setCurrentProjectId(projectId);
     loadProjectData(newProject.data);
 
-    localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(updatedProjects));
-    localStorage.setItem(CURRENT_PROJECT_KEY, projectId);
+    localforage.setItem(PROJECTS_STORAGE_KEY, updatedProjects);
+    localforage.setItem(CURRENT_PROJECT_KEY, projectId);
   };
 
   const switchProject = (projectId) => {
@@ -367,7 +376,7 @@ export default function App() {
     setCurrentProjectId(projectId);
     if (projects[projectId]) {
       loadProjectData(projects[projectId].data);
-      localStorage.setItem(CURRENT_PROJECT_KEY, projectId);
+      localforage.setItem(CURRENT_PROJECT_KEY, projectId);
     }
   };
 
@@ -382,7 +391,7 @@ export default function App() {
     };
 
     setProjects(updatedProjects);
-    localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(updatedProjects));
+    localforage.setItem(PROJECTS_STORAGE_KEY, updatedProjects);
   };
 
   const deleteProject = (projectId) => {
@@ -399,14 +408,14 @@ export default function App() {
     delete updatedProjects[projectId];
 
     setProjects(updatedProjects);
-    localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(updatedProjects));
+    localforage.setItem(PROJECTS_STORAGE_KEY, updatedProjects);
 
     // If we deleted the current project, switch to another one
     if (projectId === currentProjectId) {
       const nextProjectId = Object.keys(updatedProjects)[0];
       setCurrentProjectId(nextProjectId);
       loadProjectData(updatedProjects[nextProjectId].data);
-      localStorage.setItem(CURRENT_PROJECT_KEY, nextProjectId);
+      localforage.setItem(CURRENT_PROJECT_KEY, nextProjectId);
     }
   };
 
@@ -501,8 +510,8 @@ export default function App() {
       setProjects(data.projects);
       setCurrentProjectId(data.currentProjectId);
       loadProjectData(data.projects[data.currentProjectId].data);
-      localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(data.projects));
-      localStorage.setItem(CURRENT_PROJECT_KEY, data.currentProjectId);
+      localforage.setItem(PROJECTS_STORAGE_KEY, data.projects);
+      localforage.setItem(CURRENT_PROJECT_KEY, data.currentProjectId);
     } catch (e) {
       alert('Failed to import: Invalid backup file');
     }
