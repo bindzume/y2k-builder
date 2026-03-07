@@ -14,7 +14,8 @@ export const generateExportCode = (elements, bgImage, bgMusic, cursor, pageTitle
         justify-content: ${el.justifyContent || 'flex-start'};
         align-items: ${el.alignItems || 'stretch'};
         gap: ${el.gap || 0}px;
-        flex-wrap: wrap;
+        flex-wrap: ${el.marqueeEnabled ? 'nowrap' : 'wrap'};
+        ${el.marqueeEnabled ? 'overflow: hidden;' : ''}
       `;
     } else if (el.type === 'marquee' || el.type === 'button' || el.type === 'counter') {
       extraCss += 'display: flex; align-items: center; justify-content: center;';
@@ -131,13 +132,38 @@ export const generateExportCode = (elements, bgImage, bgMusic, cursor, pageTitle
 
   const styles = elements.map(el => getElementStyle(el)).join('\n');
 
+  // Generate marquee keyframes for flex elements with marquee enabled
+  const marqueeKeyframes = elements
+    .filter(el => el.type === 'flex' && el.marqueeEnabled)
+    .map(el => {
+      const direction = el.marqueeDirection || 'left';
+      const animationName = `marquee-${direction}-${el.id}`;
+      const axis = direction === 'left' || direction === 'right' ? 'X' : 'Y';
+      const sign = direction === 'left' || direction === 'up' ? '-' : '';
+      return `
+        @keyframes ${animationName} {
+          0% { transform: translate${axis}(0); }
+          100% { transform: translate${axis}(${sign}50%); }
+        }
+      `;
+    })
+    .join('\n');
+
   const renderElementHtml = (el) => {
     let content = '';
     const children = allElements.filter(child => child.parentId === el.id);
     children.sort((a,b) => a.zIndex - b.zIndex);
 
     if (el.type === 'flex') {
-      content = children.map(child => renderElementHtml(child)).join('\n');
+      const childrenHtml = children.map(child => renderElementHtml(child)).join('\n');
+      if (el.marqueeEnabled && children.length > 0) {
+        const direction = el.marqueeDirection || 'left';
+        const speed = el.marqueeSpeed || 10;
+        const animationName = `marquee-${direction}-${el.id}`;
+        content = `<div class="marquee-wrapper" style="display: flex; flex-direction: ${el.flexDirection || 'row'}; align-items: ${el.alignItems || 'stretch'}; gap: ${el.gap || 0}px; animation: ${animationName} ${speed}s linear infinite;">${childrenHtml}${childrenHtml}</div>`;
+      } else {
+        content = childrenHtml;
+      }
     } else if (el.type === 'table') {
         const rows = el.rows || 2;
         const cols = el.cols || 2;
@@ -223,6 +249,7 @@ export const generateExportCode = (elements, bgImage, bgMusic, cursor, pageTitle
     a { color: inherit; }
     @keyframes blinker { 50% { opacity: 0; } }
     .blink-text { animation: blinker 1s linear infinite; }
+    ${marqueeKeyframes}
     ${styles}
   </style>
 </head>

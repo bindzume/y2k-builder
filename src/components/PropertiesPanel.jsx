@@ -104,6 +104,33 @@ const PropertiesPanel = ({
                 <select value={selectedElement.justifyContent || 'flex-start'} onChange={(e) => updateElement(selectedElement.id, { justifyContent: e.target.value })} className="w-full text-[10px] border border-black font-mono"><option value="flex-start">Start</option><option value="center">Center</option><option value="flex-end">End</option><option value="space-between">Between</option></select>
                 <select value={selectedElement.alignItems || 'stretch'} onChange={(e) => updateElement(selectedElement.id, { alignItems: e.target.value })} className="w-full text-[10px] border border-black font-mono mt-1"><option value="stretch">Stretch</option><option value="flex-start">Start</option><option value="center">Center</option><option value="flex-end">End</option></select>
                 <div className="flex items-center gap-1 mt-1"><label className="text-[10px]">Gap:</label><input type="number" value={selectedElement.gap || 0} onChange={(e) => updateElement(selectedElement.id, { gap: parseInt(e.target.value) })} className="flex-1 text-[10px] border border-black p-1" /></div>
+
+                <div className="mt-3 pt-2 border-t border-gray-300">
+                    <div className="flex items-center justify-between mb-2">
+                        <label className="text-[10px] font-bold">Marquee Scroll</label>
+                        <input type="checkbox" checked={selectedElement.marqueeEnabled || false} onChange={(e) => updateElement(selectedElement.id, { marqueeEnabled: e.target.checked })} />
+                    </div>
+                    {selectedElement.marqueeEnabled && (
+                        <div className="space-y-2">
+                            <div className="flex items-center gap-1">
+                                <label className="text-[10px]">Direction:</label>
+                                <select value={selectedElement.marqueeDirection || 'left'} onChange={(e) => updateElement(selectedElement.id, { marqueeDirection: e.target.value })} className="flex-1 text-[10px] border border-black">
+                                    <option value="left">← Left</option>
+                                    <option value="right">→ Right</option>
+                                    <option value="up">↑ Up</option>
+                                    <option value="down">↓ Down</option>
+                                </select>
+                            </div>
+                            <div>
+                                <div className="flex justify-between text-[8px] mb-1">
+                                    <span>Speed: {selectedElement.marqueeSpeed || 10}s</span>
+                                    <span className="text-gray-500">Slower ← → Faster</span>
+                                </div>
+                                <input type="range" min="3" max="30" value={selectedElement.marqueeSpeed || 10} onChange={(e) => updateElement(selectedElement.id, { marqueeSpeed: parseInt(e.target.value) })} className="w-full h-1 bg-gray-400 rounded-lg appearance-none cursor-pointer" />
+                            </div>
+                        </div>
+                    )}
+                </div>
             </div>)}
 
             <div className="space-y-2 mb-2 pb-2 border-b border-gray-400">

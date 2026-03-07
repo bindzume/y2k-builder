@@ -102,7 +102,10 @@ const StaticElement = ({ element, globalSelectedId, onSelect, onUpdate, allEleme
     commonStyle.justifyContent = element.justifyContent || 'flex-start';
     commonStyle.alignItems = element.alignItems || 'stretch';
     commonStyle.gap = (element.gap || 0) + 'px';
-    commonStyle.flexWrap = 'wrap';
+    commonStyle.flexWrap = element.marqueeEnabled ? 'nowrap' : 'wrap';
+    if (element.marqueeEnabled) {
+        commonStyle.overflow = 'hidden';
+    }
   }
 
   const renderContent = () => {
@@ -110,11 +113,42 @@ const StaticElement = ({ element, globalSelectedId, onSelect, onUpdate, allEleme
     children.sort((a,b) => a.zIndex - b.zIndex);
 
     if (element.type === 'flex') {
+      const childElements = children.map(child => (
+          <StaticElement key={child.id} element={child} globalSelectedId={globalSelectedId} onSelect={onSelect} onUpdate={onUpdate} allElements={allElements} />
+      ));
+
+      if (element.marqueeEnabled && children.length > 0) {
+          const direction = element.marqueeDirection || 'left';
+          const speed = element.marqueeSpeed || 10;
+          const animationName = `marquee-${direction}-${element.id}`;
+
+          const marqueeStyle = {
+              display: 'flex',
+              flexDirection: element.flexDirection || 'row',
+              alignItems: element.alignItems || 'stretch',
+              gap: (element.gap || 0) + 'px',
+              animation: `${animationName} ${speed}s linear infinite`,
+          };
+
+          return (
+              <>
+                  <style>{`
+                      @keyframes ${animationName} {
+                          0% { transform: translate${direction === 'left' || direction === 'right' ? 'X' : 'Y'}(0); }
+                          100% { transform: translate${direction === 'left' || direction === 'right' ? 'X' : 'Y'}(${direction === 'left' || direction === 'up' ? '-' : ''}50%); }
+                      }
+                  `}</style>
+                  <div style={marqueeStyle}>
+                      {childElements}
+                      {childElements}
+                  </div>
+              </>
+          );
+      }
+
       return (
         <>
-          {children.map(child => (
-            <StaticElement key={child.id} element={child} globalSelectedId={globalSelectedId} onSelect={onSelect} onUpdate={onUpdate} allElements={allElements} />
-          ))}
+          {childElements}
           {children.length === 0 && (
             <div className="absolute inset-0 flex items-center justify-center text-gray-400 text-xs pointer-events-none border border-dashed border-gray-400 m-2 text-center text-inherit">
               Flex Container
