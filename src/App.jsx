@@ -485,6 +485,7 @@ export default function App() {
     if (type === 'counter') { width = 120; height = 40; }
     if (type === 'guestbook') { width = 250; height = 200; content = 'My Guestbook'; baseStyle.borderTopWidth = 2; baseStyle.borderRightWidth = 2; baseStyle.borderBottomWidth = 2; baseStyle.borderLeftWidth = 2; baseStyle.borderStyle = 'dashed'; }
     if (type === 'image') { width = 150; height = 150; }
+    if (type === 'custom-html') { width = 300; height = 100; content = '<div>Paste your HTML here...</div>'; baseStyle.borderTopWidth = 1; baseStyle.borderRightWidth = 1; baseStyle.borderBottomWidth = 1; baseStyle.borderLeftWidth = 1; baseStyle.borderStyle = 'dashed'; baseStyle.borderColor = '#999999'; }
 
     const newElement = {
       id: newId, type, x: 50 + (elements.length * 20), y: 50 + (elements.length * 20),

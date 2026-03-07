@@ -278,6 +278,20 @@ const PropertiesPanel = ({
             <div className="space-y-2 mb-2 mt-2 pb-2 border-b border-gray-400">
                 <label className="text-xs font-bold">Element Content</label>
                 {(selectedElement.type === 'text' || selectedElement.type === 'marquee' || selectedElement.type === 'button' || selectedElement.type === 'webring') && (<div className="border border-gray-400"><RichTextEditor content={selectedElement.content} onChange={(html) => updateElement(selectedElement.id, { content: html })} /></div>)}
+                {selectedElement.type === 'custom-html' && (
+                  <div>
+                    <label className="text-[10px] block mb-1">Custom HTML Code</label>
+                    <textarea
+                      value={selectedElement.content || ''}
+                      onChange={(e) => updateElement(selectedElement.id, { content: e.target.value })}
+                      className="w-full text-xs p-2 border-2 border-[#808080] border-t-black border-l-black font-mono"
+                      placeholder="<div>Your HTML here...</div>"
+                      rows={8}
+                      spellCheck={false}
+                    />
+                    <div className="text-[8px] text-gray-600 mt-1">Paste any HTML, CSS, or JavaScript. Be careful with scripts!</div>
+                  </div>
+                )}
                 {selectedElement.type === 'image' && (<div><label className="text-[10px] block">Image URL</label><input type="text" value={selectedElement.src || ''} onChange={(e) => updateElement(selectedElement.id, { src: e.target.value })} className="w-full text-xs p-1 border-2 border-[#808080] border-t-black border-l-black font-mono" placeholder="https://..." /></div>)}
                 {selectedElement.type === 'image' && (
   <div className="space-y-2 mb-2 pb-2 border-b border-gray-400">

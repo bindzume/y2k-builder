@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
   MousePointer2, Type, Image as ImageIcon, Box, Music, Minus, Globe, Hash, BookOpen,
   BoxSelect, Table, Move, Monitor, Save, RotateCcw, Eye, Download, Undo2, Redo2,
-  ClipboardPaste, X, Plus, FolderOpen, Pencil, Trash2
+  ClipboardPaste, X, Plus, FolderOpen, Pencil, Trash2, Code
 } from 'lucide-react';
 
 const LeftSidebar = ({
@@ -172,6 +172,7 @@ const LeftSidebar = ({
           <button onClick={() => addElement('counter')} className="w-full flex items-center gap-2 px-2 py-1 bg-[#c0c0c0] border-t-2 border-l-2 border-white border-b-2 border-r-2 border-black text-sm hover:bg-[#d0d0d0]"><Hash size={14} /> Visitor Counter</button>
           <button onClick={() => addElement('guestbook')} className="w-full flex items-center gap-2 px-2 py-1 bg-[#c0c0c0] border-t-2 border-l-2 border-white border-b-2 border-r-2 border-black text-sm hover:bg-[#d0d0d0]"><BookOpen size={14} /> Guestbook</button>
           <button onClick={() => addElement('hr')} className="w-full flex items-center gap-2 px-2 py-1 bg-[#c0c0c0] border-t-2 border-l-2 border-white border-b-2 border-r-2 border-black text-sm hover:bg-[#d0d0d0]"><Minus size={14} /> Divider (HR)</button>
+          <button onClick={() => addElement('custom-html')} className="w-full flex items-center gap-2 px-2 py-1 bg-[#c0c0c0] border-t-2 border-l-2 border-white border-b-2 border-r-2 border-black text-sm hover:bg-[#d0d0d0]"><Code size={14} /> Custom HTML</button>
         </div>
 
         <div className="space-y-2">

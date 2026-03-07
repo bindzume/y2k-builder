@@ -194,6 +194,7 @@ const StaticElement = ({ element, globalSelectedId, onSelect, onUpdate, allEleme
       );
       case 'counter': return <div className="w-full h-full bg-black text-[#00FF00] font-mono flex items-center justify-center tracking-widest text-lg border-2 border-[#808080] border-inset pointer-events-none">004521</div>;
       case 'marquee': return <div className="w-full h-full flex items-center bg-inherit text-inherit overflow-hidden"><marquee scrollamount="5" className="w-full" dangerouslySetInnerHTML={{ __html: element.content }} /></div>;
+      case 'custom-html': return <div className="w-full h-full pointer-events-none overflow-auto" dangerouslySetInnerHTML={{ __html: element.content }} />;
       default: return <div className="w-full h-full pointer-events-none overflow-hidden" />;
     }
   };

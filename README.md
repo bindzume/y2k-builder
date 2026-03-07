@@ -17,9 +17,9 @@ If you are developing a production application, we recommend using TypeScript wi
 
 
 ## To Do:
-- Make the background image have parity with export
-- Add toggle between <audio> tag and using javascript with better looping
-- have multiple sites in localstorage
+- Make the background image have parity with export (done)
+- Add toggle between <audio> tag and using javascript with better looping (done)
+- have multiple sites in localstorage (done)
 - import site
 - on hover make things change or make image popup
-- clear cursor, background image, and audio
+- clear cursor, background image, and audio (done)

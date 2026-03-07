@@ -208,6 +208,8 @@ export const generateExportCode = (elements, bgImage, bgImageStyle, bgImageTileS
                 </div>
                 </div>
             `;
+        } else if (el.type === 'custom-html') {
+            content = String(el.content || "");
         }
     }
 
