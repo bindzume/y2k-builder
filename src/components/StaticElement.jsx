@@ -90,6 +90,41 @@ const StaticElement = ({ element, globalSelectedId, onSelect, onUpdate, allEleme
     commonStyle.color = 'transparent';
   }
 
+  // Apply background image (supports layering with gradient) - run after text gradient handling
+  const bgImg = element.style.backgroundImage;
+  const bgImgStyle = element.style.backgroundImageStyle || 'cover';
+  const bgTile = element.style.backgroundImageTileSize || element.backgroundImageTileSize || 200;
+
+  if (bgImg) {
+    if (commonStyle.background) delete commonStyle.background;
+
+    if (element.style.bgGradientEnabled) {
+      const gradient = `linear-gradient(${element.style.bgGradientAngle || 0}deg, ${element.style.bgGradientStart || '#ffffff'}, ${element.style.bgGradientEnd || '#000000'})`;
+      commonStyle.backgroundImage = `${gradient}, url("${bgImg}")`;
+      const sizeForImage = bgImgStyle === 'cover' ? 'cover' : bgImgStyle === 'contain' ? 'contain' : bgImgStyle === 'repeat' ? `${bgTile}px ${bgTile}px` : 'auto';
+      commonStyle.backgroundSize = `auto, ${sizeForImage}`;
+      commonStyle.backgroundRepeat = `no-repeat, ${bgImgStyle === 'repeat' ? 'repeat' : 'no-repeat'}`;
+      commonStyle.backgroundPosition = `center, center`;
+    } else {
+      commonStyle.backgroundImage = `url("${bgImg}")`;
+      if (bgImgStyle === 'cover') {
+        commonStyle.backgroundSize = 'cover';
+        commonStyle.backgroundRepeat = 'no-repeat';
+        commonStyle.backgroundPosition = 'center';
+      } else if (bgImgStyle === 'contain') {
+        commonStyle.backgroundSize = 'contain';
+        commonStyle.backgroundRepeat = 'no-repeat';
+        commonStyle.backgroundPosition = 'center';
+      } else if (bgImgStyle === 'repeat') {
+        commonStyle.backgroundSize = `${bgTile}px ${bgTile}px`;
+        commonStyle.backgroundRepeat = 'repeat';
+      } else {
+        commonStyle.backgroundSize = 'auto';
+        commonStyle.backgroundRepeat = 'no-repeat';
+      }
+    }
+  }
+
   if (element.type !== 'flex' && element.style.verticalAlign && element.style.verticalAlign !== 'top') {
     commonStyle.display = 'flex';
     commonStyle.flexDirection = 'column';

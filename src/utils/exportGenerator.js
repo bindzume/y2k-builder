@@ -83,6 +83,33 @@ export const generateExportCode = (elements, bgImage, bgImageStyle, bgImageTileS
         backgroundStyle = `background: linear-gradient(${el.style.bgGradientAngle || 0}deg, ${el.style.bgGradientStart || '#ffffff'}, ${el.style.bgGradientEnd || '#000000'});`;
     }
 
+    // Background Image Handling (supports layering with gradient)
+    if (el.style.backgroundImage) {
+      const imgSrc = el.style.backgroundImage;
+      const imgStyle = el.style.backgroundImageStyle || 'cover';
+      const tileSize = el.style.backgroundImageTileSize || el.backgroundImageTileSize || 200;
+
+      if (el.style.bgGradientEnabled) {
+        // Layer gradient then image
+        backgroundStyle = `background-image: linear-gradient(${el.style.bgGradientAngle || 0}deg, ${el.style.bgGradientStart || '#ffffff'}, ${el.style.bgGradientEnd || '#000000'}), url('${imgSrc}');`;
+      } else {
+        backgroundStyle = `background-image: url('${imgSrc}');`;
+      }
+
+      // sizing / repeat
+      if (imgStyle === 'cover') {
+        backgroundStyle += ` background-size: ${el.style.bgGradientEnabled ? 'auto, cover' : 'cover'}; background-repeat: no-repeat; background-position: center;`;
+      } else if (imgStyle === 'contain') {
+        backgroundStyle += ` background-size: ${el.style.bgGradientEnabled ? 'auto, contain' : 'contain'}; background-repeat: no-repeat; background-position: center;`;
+      } else if (imgStyle === 'repeat') {
+        backgroundStyle += ` background-size: ${el.style.bgGradientEnabled ? 'auto, ${tileSize}px ${tileSize}px' : `${tileSize}px ${tileSize}px`}; background-repeat: repeat;`;
+      } else if (imgStyle === 'center') {
+        backgroundStyle += ` background-size: auto; background-position: center; background-repeat: no-repeat;`;
+      } else {
+        backgroundStyle += ` background-size: auto; background-repeat: no-repeat;`;
+      }
+    }
+
     // Text Color / Gradient Handling
     let colorStyle = `color: ${el.style.color || '#000000'};`;
     if (el.style.textGradientEnabled) {

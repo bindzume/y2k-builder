@@ -117,15 +117,49 @@ const DraggableElement = ({ element, isSelected, globalSelectedId, onSelect, onU
     commonStyle.backgroundClip = 'content-box';
   }
 
-  if (element.style.bgGradientEnabled) {
-      commonStyle.background = `linear-gradient(${element.style.bgGradientAngle || 0}deg, ${element.style.bgGradientStart || '#ffffff'}, ${element.style.bgGradientEnd || '#000000'})`;
-  }
+    // Background gradient handled later along with image to avoid accidental overrides
   if (element.style.textGradientEnabled) {
       commonStyle.background = `linear-gradient(${element.style.textGradientAngle || 0}deg, ${element.style.textGradientStart || '#ffffff'}, ${element.style.textGradientEnd || '#000000'})`;
       commonStyle.WebkitBackgroundClip = 'text';
       commonStyle.WebkitTextFillColor = 'transparent';
       commonStyle.backgroundClip = 'text';
       commonStyle.color = 'transparent';
+  }
+
+  // Final background/image application (run after text-gradient to ensure correct layering)
+  const bgImageSrcFinal = element.style.backgroundImage;
+  const bgImageStyleFinal = element.style.backgroundImageStyle || 'cover';
+  const bgTileSizeFinal = element.style.backgroundImageTileSize || element.backgroundImageTileSize || 200;
+
+  if (bgImageSrcFinal) {
+    // Remove any shorthand background to avoid accidental resets
+    if (commonStyle.background) delete commonStyle.background;
+
+    if (element.style.bgGradientEnabled) {
+      const gradient = `linear-gradient(${element.style.bgGradientAngle || 0}deg, ${element.style.bgGradientStart || '#ffffff'}, ${element.style.bgGradientEnd || '#000000'})`;
+      commonStyle.backgroundImage = `${gradient}, url("${bgImageSrcFinal}")`;
+      const sizeForImage = bgImageStyleFinal === 'cover' ? 'cover' : bgImageStyleFinal === 'contain' ? 'contain' : bgImageStyleFinal === 'repeat' ? `${bgTileSizeFinal}px ${bgTileSizeFinal}px` : 'auto';
+      commonStyle.backgroundSize = `auto, ${sizeForImage}`;
+      commonStyle.backgroundRepeat = `no-repeat, ${bgImageStyleFinal === 'repeat' ? 'repeat' : 'no-repeat'}`;
+      commonStyle.backgroundPosition = `center, center`;
+    } else {
+      commonStyle.backgroundImage = `url("${bgImageSrcFinal}")`;
+      if (bgImageStyleFinal === 'cover') {
+        commonStyle.backgroundSize = 'cover';
+        commonStyle.backgroundRepeat = 'no-repeat';
+        commonStyle.backgroundPosition = 'center';
+      } else if (bgImageStyleFinal === 'contain') {
+        commonStyle.backgroundSize = 'contain';
+        commonStyle.backgroundRepeat = 'no-repeat';
+        commonStyle.backgroundPosition = 'center';
+      } else if (bgImageStyleFinal === 'repeat') {
+        commonStyle.backgroundSize = `${bgTileSizeFinal}px ${bgTileSizeFinal}px`;
+        commonStyle.backgroundRepeat = 'repeat';
+      } else {
+        commonStyle.backgroundSize = 'auto';
+        commonStyle.backgroundRepeat = 'no-repeat';
+      }
+    }
   }
 
   if (element.type !== 'flex' && element.style.verticalAlign && element.style.verticalAlign !== 'top') {

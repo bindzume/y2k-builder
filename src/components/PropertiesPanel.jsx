@@ -7,6 +7,7 @@ import {
   Zap, Copy, Bold, Italic, Underline, Strikethrough, Palette, ArrowUp
 } from 'lucide-react';
 import RichTextEditor from './RichTextEditor';
+import { fileToBase64 } from '../utils/fileHelpers';
 
 const PropertiesPanel = ({
   selectedElement,
@@ -23,6 +24,15 @@ const PropertiesPanel = ({
   useEffect(() => {
     setTempColor(null);
   }, [selectedElement?.id]);
+
+  const handleBgImageDrop = async (e) => {
+    e.preventDefault();
+    const file = e.dataTransfer?.files && e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+      const base64 = await fileToBase64(file);
+      updateStyle('backgroundImage', base64);
+    }
+  };
 
   if (!selectedElement) {
     return (
@@ -254,6 +264,34 @@ const PropertiesPanel = ({
                 ) : (
                     <div className="flex gap-2"><input type="color" value={(selectedElement.style.backgroundColor === 'transparent' || !selectedElement.style.backgroundColor) ? '#ffffff' : selectedElement.style.backgroundColor} onChange={(e) => updateStyle('backgroundColor', e.target.value)} className="h-6 w-8 p-0 border-0" /><button onClick={() => updateStyle('backgroundColor', 'transparent')} className="text-xs px-2 bg-gray-300 border border-gray-500 font-bold">Trans.</button></div>
                 )}
+                {/* Background image controls (allow flexboxes and other elements to have images). Supports drag-and-drop. */}
+                <div className="mt-2" onDragOver={(e) => e.preventDefault()} onDrop={handleBgImageDrop}>
+                  <label className="text-[10px] block">Background Image URL / Drop Image Here</label>
+                  <div className="flex items-center gap-2">
+                    <input type="text" value={selectedElement.style.backgroundImage || ''} onChange={(e) => updateStyle('backgroundImage', e.target.value)} placeholder="https://... or drop image" className="flex-1 text-xs p-1 border-2 border-[#808080] border-t-black border-l-black font-mono" />
+                    {selectedElement.style.backgroundImage && (
+                      <button onClick={() => updateStyle('backgroundImage', '')} className="text-xs px-2 bg-red-200 border border-black">Clear</button>
+                    )}
+                  </div>
+                  {selectedElement.style.backgroundImage && (
+                    <div className="mt-2 border border-gray-300 p-1 inline-flex items-center gap-2">
+                      <img src={selectedElement.style.backgroundImage} alt="bg-preview" className="w-12 h-8 object-cover border" />
+                      <div className="text-[10px] text-gray-700">Preview</div>
+                    </div>
+                  )}
+                  <div className="flex gap-1 mt-2">
+                    <select value={selectedElement.style.backgroundImageStyle || 'cover'} onChange={(e) => updateStyle('backgroundImageStyle', e.target.value)} className="flex-1 text-[10px] p-1 border-2 border-[#808080] border-t-black border-l-black">
+                      <option value="cover">Cover (Fill)</option>
+                      <option value="contain">Contain (Fit)</option>
+                      <option value="repeat">Repeat (Tile)</option>
+                      <option value="center">Center (No Repeat)</option>
+                      <option value="auto">Auto</option>
+                    </select>
+                    {selectedElement.style.backgroundImageStyle === 'repeat' && (
+                      <input type="number" value={selectedElement.style.backgroundImageTileSize || 200} onChange={(e) => updateStyle('backgroundImageTileSize', parseInt(e.target.value) || 200)} className="w-24 text-[10px] p-1 border-2 border-[#808080]" />
+                    )}
+                  </div>
+                </div>
             </div>
 
             <div className="space-y-1 mt-2 pt-2 border-t border-gray-400">
