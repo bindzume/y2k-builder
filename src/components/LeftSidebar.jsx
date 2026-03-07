@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   MousePointer2, Type, Image as ImageIcon, Box, Music, Minus, Globe, Hash, BookOpen,
   BoxSelect, Table, Move, Monitor, Save, RotateCcw, Eye, Download, Undo2, Redo2,
-  ClipboardPaste, X
+  ClipboardPaste, X, Plus, FolderOpen, Pencil, Trash2
 } from 'lucide-react';
 
 const LeftSidebar = ({
@@ -18,7 +18,49 @@ const LeftSidebar = ({
   pageMargin, setPageMargin,
   saveProject, clearProject,
   handleSample, handleExport,
+  projects, currentProjectId, createNewProject, switchProject, renameProject, deleteProject,
 }) => {
+  const [showProjectList, setShowProjectList] = useState(false);
+  const [renamingProjectId, setRenamingProjectId] = useState(null);
+  const [renameValue, setRenameValue] = useState('');
+  const [frozenProjectList, setFrozenProjectList] = useState([]);
+  const dropdownRef = useRef(null);
+
+  const currentProject = projects[currentProjectId];
+  const projectList = showProjectList ? frozenProjectList : Object.values(projects).sort((a, b) => b.lastModified - a.lastModified);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowProjectList(false);
+        setRenamingProjectId(null);
+      }
+    };
+
+    if (showProjectList) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showProjectList]);
+
+  const handleRenameStart = (project) => {
+    setRenamingProjectId(project.id);
+    setRenameValue(project.name);
+  };
+
+  const handleRenameSubmit = (projectId) => {
+    if (renameValue.trim()) {
+      renameProject(projectId, renameValue.trim());
+    }
+    setRenamingProjectId(null);
+    setRenameValue('');
+  };
+
+  const handleRenameCancel = () => {
+    setRenamingProjectId(null);
+    setRenameValue('');
+  };
   return (
     <div className="w-64 flex flex-col border-r-2 border-white border-r-[#808080] shadow-[inset_-2px_-2px_#ffffff,inset_2px_2px_#dfdfdf]">
       <div className="bg-gradient-to-r from-[#000080] to-[#1084d0] text-white p-1 px-2 font-bold text-sm flex items-center gap-2">
@@ -26,6 +68,96 @@ const LeftSidebar = ({
       </div>
 
       <div className="p-4 space-y-4 overflow-y-auto flex-1">
+        {/* Project Manager */}
+        <div className="space-y-2">
+          <div className="text-xs font-bold text-gray-600 mb-1 border-b border-gray-400 pb-1 flex items-center justify-between">
+            <span>PROJECTS</span>
+            <button
+              onClick={createNewProject}
+              className="text-blue-600 hover:text-blue-800"
+              title="Create new project"
+            >
+              <Plus size={14} />
+            </button>
+          </div>
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => {
+                if (!showProjectList) {
+                  // Freeze the project list order when opening the dropdown
+                  setFrozenProjectList(Object.values(projects).sort((a, b) => b.lastModified - a.lastModified));
+                }
+                setShowProjectList(!showProjectList);
+              }}
+              className="w-full flex items-center justify-between gap-2 px-2 py-1.5 bg-white border-2 border-gray-400 text-sm hover:bg-gray-50"
+            >
+              <div className="flex items-center gap-2 truncate">
+                <FolderOpen size={14} />
+                <span className="truncate">{currentProject?.name || 'Select Project'}</span>
+              </div>
+              <span className="text-xs">{projectList.length}</span>
+            </button>
+            {showProjectList && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white border-2 border-gray-400 shadow-lg z-50 max-h-64 overflow-y-auto">
+                {projectList.map(project => (
+                  <div
+                    key={project.id}
+                    className={`flex items-center gap-1 px-2 py-1.5 hover:bg-blue-50 ${project.id === currentProjectId ? 'bg-blue-100' : ''}`}
+                  >
+                    {renamingProjectId === project.id ? (
+                      <input
+                        type="text"
+                        value={renameValue}
+                        onChange={(e) => setRenameValue(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleRenameSubmit(project.id);
+                          if (e.key === 'Escape') handleRenameCancel();
+                        }}
+                        onBlur={() => handleRenameSubmit(project.id)}
+                        className="flex-1 text-xs p-0.5 border border-gray-400"
+                        autoFocus
+                      />
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => {
+                            switchProject(project.id);
+                            setShowProjectList(false);
+                          }}
+                          className="flex-1 text-left text-xs truncate min-w-0"
+                        >
+                          {project.name}
+                        </button>
+                        <button
+                          onClick={() => handleRenameStart(project)}
+                          className="p-0.5 hover:bg-blue-200 rounded shrink-0 w-6 h-6 flex items-center justify-center"
+                          title="Rename project"
+                        >
+                          <Pencil size={12} />
+                        </button>
+                        {projectList.length > 1 ? (
+                          <button
+                            onClick={() => {
+                              deleteProject(project.id);
+                              setShowProjectList(false);
+                            }}
+                            className="p-0.5 hover:bg-red-200 rounded text-red-600 shrink-0 w-6 h-6 flex items-center justify-center"
+                            title="Delete project"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        ) : (
+                          <div className="w-6 h-6 shrink-0"></div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
         <div className="flex gap-1 mb-2">
           <button onClick={undo} disabled={historyIndex === 0} className={`flex-1 flex items-center justify-center gap-1 p-1 bg-[#c0c0c0] border-2 border-black text-xs ${historyIndex === 0 ? 'opacity-30' : 'hover:bg-[#d0d0d0]'}`} title="Undo (Ctrl+Z)"><Undo2 size={12}/> Undo</button>
           <button onClick={redo} disabled={historyIndex === historyLength - 1} className={`flex-1 flex items-center justify-center gap-1 p-1 bg-[#c0c0c0] border-2 border-black text-xs ${historyIndex === historyLength - 1 ? 'opacity-30' : 'hover:bg-[#d0d0d0]'}`} title="Redo (Ctrl+Y)"><Redo2 size={12}/> Redo</button>

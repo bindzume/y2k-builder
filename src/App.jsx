@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { STORAGE_KEY } from './utils/constants';
 import { fileToBase64, resizeForCursor } from './utils/fileHelpers';
 import { generateExportCode } from './utils/exportGenerator';
@@ -6,8 +6,14 @@ import LeftSidebar from './components/LeftSidebar';
 import Canvas from './components/Canvas';
 import PropertiesPanel from './components/PropertiesPanel';
 
+const PROJECTS_STORAGE_KEY = 'y2k-builder-projects';
+const CURRENT_PROJECT_KEY = 'y2k-builder-current-project';
 
 export default function App() {
+  // Project management
+  const [projects, setProjects] = useState({});
+  const [currentProjectId, setCurrentProjectId] = useState(null);
+
   const [elements, setElements] = useState([]);
   const [history, setHistory] = useState([[]]);
   const [historyIndex, setHistoryIndex] = useState(0);
@@ -31,30 +37,156 @@ export default function App() {
   const rootElements = useMemo(() => elements.filter(el => !el.parentId), [elements]);
   const selectedElement = elements.find(el => el.id === selectedId);
 
-  // Load from local storage
+  // Get current project data
+  const getCurrentProjectData = () => ({
+    elements,
+    pageTitle,
+    pageHeight,
+    pagePadding,
+    pageMargin,
+    pageColor,
+    bgImage,
+    bgImageStyle,
+    bgImageTileSize,
+    bgMusic,
+    bgMusicName,
+    bgMusicMode,
+    cursor
+  });
+
+  // Load a project's data into state
+  const loadProjectData = (data) => {
+    setElements(data.elements || []);
+    setHistory([data.elements || []]);
+    setHistoryIndex(0);
+    setPageTitle(data.pageTitle || 'My Y2K Website');
+    setPageHeight(data.pageHeight || 800);
+    setPagePadding(data.pagePadding || 0);
+    setPageMargin(data.pageMargin || 0);
+    setPageColor(data.pageColor || '#c0c0c0');
+    setBgImage(data.bgImage);
+    setBgImageStyle(data.bgImageStyle || 'cover');
+    setBgImageTileSize(data.bgImageTileSize || 200);
+    setBgMusic(data.bgMusic);
+    setBgMusicName(data.bgMusicName || '');
+    setBgMusicMode(data.bgMusicMode || 'webaudio');
+    setCursor(data.cursor);
+  };
+
+  // Initialize projects from localStorage
   useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        const data = JSON.parse(saved);
-        setElements(data.elements || []);
-        setHistory([data.elements || []]);
-        setHistoryIndex(0);
-        setPageTitle(data.pageTitle || 'My Y2K Website');
-        setPageHeight(data.pageHeight || 800);
-        setPagePadding(data.pagePadding || 0);
-        setPageMargin(data.pageMargin || 0);
-        setPageColor(data.pageColor || '#c0c0c0');
-        setBgImage(data.bgImage);
-        setBgImageStyle(data.bgImageStyle || 'cover');
-        setBgImageTileSize(data.bgImageTileSize || 200);
-        setBgMusic(data.bgMusic);
-        setBgMusicName(data.bgMusicName || '');
-        setBgMusicMode(data.bgMusicMode || 'webaudio');
-        setCursor(data.cursor);
-      } catch (e) { console.error("Failed to load save", e); }
+    try {
+      // Check for old single-project format and migrate
+      const oldSave = localStorage.getItem(STORAGE_KEY);
+      let loadedProjects = {};
+      let loadedCurrentId = null;
+
+      const savedProjects = localStorage.getItem(PROJECTS_STORAGE_KEY);
+      const savedCurrentId = localStorage.getItem(CURRENT_PROJECT_KEY);
+
+      if (savedProjects) {
+        loadedProjects = JSON.parse(savedProjects);
+        loadedCurrentId = savedCurrentId;
+      } else if (oldSave) {
+        // Migrate old single project
+        const oldData = JSON.parse(oldSave);
+        const projectId = `project_${Date.now()}`;
+        loadedProjects = {
+          [projectId]: {
+            id: projectId,
+            name: oldData.pageTitle || 'My Y2K Website',
+            data: oldData,
+            lastModified: Date.now()
+          }
+        };
+        loadedCurrentId = projectId;
+        localStorage.removeItem(STORAGE_KEY); // Remove old format
+      }
+
+      // If no projects exist, create a default one
+      if (Object.keys(loadedProjects).length === 0) {
+        const projectId = `project_${Date.now()}`;
+        loadedProjects = {
+          [projectId]: {
+            id: projectId,
+            name: 'My Y2K Website',
+            data: getCurrentProjectData(),
+            lastModified: Date.now()
+          }
+        };
+        loadedCurrentId = projectId;
+      }
+
+      setProjects(loadedProjects);
+      setCurrentProjectId(loadedCurrentId);
+
+      if (loadedCurrentId && loadedProjects[loadedCurrentId]) {
+        loadProjectData(loadedProjects[loadedCurrentId].data);
+      }
+    } catch (e) {
+      console.error("Failed to load projects", e);
+      // Create default project on error
+      const projectId = `project_${Date.now()}`;
+      const defaultProjects = {
+        [projectId]: {
+          id: projectId,
+          name: 'My Y2K Website',
+          data: getCurrentProjectData(),
+          lastModified: Date.now()
+        }
+      };
+      setProjects(defaultProjects);
+      setCurrentProjectId(projectId);
     }
   }, []);
+
+  // Define saveProject before using it in useEffect
+  const saveProject = useCallback(() => {
+    if (!currentProjectId) return;
+
+    const projectData = {
+      elements,
+      pageTitle,
+      pageHeight,
+      pagePadding,
+      pageMargin,
+      pageColor,
+      bgImage,
+      bgImageStyle,
+      bgImageTileSize,
+      bgMusic,
+      bgMusicName,
+      bgMusicMode,
+      cursor
+    };
+
+    setProjects(prevProjects => {
+      const updatedProjects = {
+        ...prevProjects,
+        [currentProjectId]: {
+          ...prevProjects[currentProjectId],
+          data: projectData,
+          lastModified: Date.now()
+        }
+      };
+
+      localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(updatedProjects));
+      localStorage.setItem(CURRENT_PROJECT_KEY, currentProjectId);
+
+      return updatedProjects;
+    });
+  }, [currentProjectId, elements, pageTitle, pageHeight, pagePadding, pageMargin, pageColor, bgImage, bgImageStyle, bgImageTileSize, bgMusic, bgMusicName, bgMusicMode, cursor]);
+
+  // Auto-save current project when important state changes
+  useEffect(() => {
+    if (!currentProjectId) return;
+
+    const timeoutId = setTimeout(() => {
+      saveProject();
+    }, 1000); // Debounce auto-save by 1 second
+
+    return () => clearTimeout(timeoutId);
+  }, [currentProjectId, saveProject]);
 
   const saveToHistory = (newElements) => {
       const newHistory = history.slice(0, historyIndex + 1);
@@ -187,23 +319,114 @@ export default function App() {
     }
   };
 
-  const saveProject = () => {
-    const data = {
-      elements, pageTitle, pageHeight, pagePadding, pageMargin, pageColor,
-      bgImage, bgImageStyle, bgImageTileSize, bgMusic, bgMusicName, bgMusicMode, cursor
+  const createNewProject = () => {
+    // Save current project first
+    if (currentProjectId) {
+      saveProject();
+    }
+
+    const projectId = `project_${Date.now()}`;
+    const newProject = {
+      id: projectId,
+      name: 'New Website',
+      data: {
+        elements: [],
+        pageTitle: 'New Website',
+        pageHeight: 800,
+        pagePadding: 0,
+        pageMargin: 0,
+        pageColor: '#ffffffff',
+        bgImage: null,
+        bgImageStyle: 'cover',
+        bgImageTileSize: 200,
+        bgMusic: null,
+        bgMusicName: '',
+        bgMusicMode: 'webaudio',
+        cursor: null
+      },
+      lastModified: Date.now()
     };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+    const updatedProjects = { ...projects, [projectId]: newProject };
+    setProjects(updatedProjects);
+    setCurrentProjectId(projectId);
+    loadProjectData(newProject.data);
+
+    localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(updatedProjects));
+    localStorage.setItem(CURRENT_PROJECT_KEY, projectId);
+  };
+
+  const switchProject = (projectId) => {
+    if (projectId === currentProjectId) return;
+
+    // Save current project before switching
+    if (currentProjectId) {
+      saveProject();
+    }
+
+    setCurrentProjectId(projectId);
+    if (projects[projectId]) {
+      loadProjectData(projects[projectId].data);
+      localStorage.setItem(CURRENT_PROJECT_KEY, projectId);
+    }
+  };
+
+  const renameProject = (projectId, newName) => {
+    const updatedProjects = {
+      ...projects,
+      [projectId]: {
+        ...projects[projectId],
+        name: newName,
+        lastModified: Date.now()
+      }
+    };
+
+    setProjects(updatedProjects);
+    localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(updatedProjects));
+  };
+
+  const deleteProject = (projectId) => {
+    if (Object.keys(projects).length === 1) {
+      alert("You cannot delete the last project.");
+      return;
+    }
+
+    if (!confirm("Are you sure you want to delete this project? This cannot be undone.")) {
+      return;
+    }
+
+    const updatedProjects = { ...projects };
+    delete updatedProjects[projectId];
+
+    setProjects(updatedProjects);
+    localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(updatedProjects));
+
+    // If we deleted the current project, switch to another one
+    if (projectId === currentProjectId) {
+      const nextProjectId = Object.keys(updatedProjects)[0];
+      setCurrentProjectId(nextProjectId);
+      loadProjectData(updatedProjects[nextProjectId].data);
+      localStorage.setItem(CURRENT_PROJECT_KEY, nextProjectId);
+    }
   };
 
   const clearProject = () => {
-    if(confirm("Are you sure? This will delete your current project and cannot be undone.")) {
-        localStorage.removeItem(STORAGE_KEY);
+    if(confirm("Are you sure? This will clear all elements and settings from the current project. This cannot be undone.")) {
         setElements([]);
         setHistory([[]]);
         setHistoryIndex(0);
         setBgImage(null);
+        setBgImageStyle('cover');
+        setBgImageTileSize(200);
         setBgMusic(null);
+        setBgMusicName('');
+        setBgMusicMode('webaudio');
         setCursor(null);
+        setPageTitle('My Y2K Website');
+        setPageHeight(800);
+        setPagePadding(0);
+        setPageMargin(0);
+        setPageColor('#ffffffff');
     }
   };
 
@@ -370,6 +593,12 @@ export default function App() {
         clearProject={clearProject}
         handleSample={handleSample}
         handleExport={handleExport}
+        projects={projects}
+        currentProjectId={currentProjectId}
+        createNewProject={createNewProject}
+        switchProject={switchProject}
+        renameProject={renameProject}
+        deleteProject={deleteProject}
       />
 
       <Canvas
