@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Trash2, Layers, Sliders, Scaling, ArrowRightFromLine, Maximize2,
   AlignHorizontalJustifyCenter, AlignVerticalJustifyCenter, LogOut,
@@ -18,6 +18,12 @@ const PropertiesPanel = ({
   handleAlign,
   setSelectedId,
 }) => {
+  const [tempColor, setTempColor] = useState(null);
+
+  useEffect(() => {
+    setTempColor(null);
+  }, [selectedElement?.id]);
+
   if (!selectedElement) {
     return (
       <div className="w-64 bg-[#c0c0c0] border-l-2 border-white border-l-[#808080] flex flex-col shadow-[inset_2px_2px_#ffffff] items-center justify-center text-gray-500 text-sm p-4 text-center"><Layers className="mb-2 opacity-50" />Select an element to edit properties</div>
@@ -290,6 +296,74 @@ const PropertiesPanel = ({
                       spellCheck={false}
                     />
                     <div className="text-[8px] text-gray-600 mt-1">Paste any HTML, CSS, or JavaScript. Be careful with scripts!</div>
+                  </div>
+                )}
+                {selectedElement.type === 'counter' && (
+                  <div className="space-y-2">
+                    <div>
+                      <label className="text-[10px] block mb-1">Unique Code (Path)</label>
+                      <input
+                        type="text"
+                        value={selectedElement.uniqueCode || ''}
+                        onChange={(e) => updateElement(selectedElement.id, { uniqueCode: e.target.value })}
+                        className="w-full text-xs p-1 border-2 border-[#808080] border-t-black border-l-black font-mono"
+                        placeholder="visitor_123abc"
+                      />
+                      <div className="text-[8px] text-gray-600 mt-1">Unique identifier for tracking</div>
+                    </div>
+                    <div>
+                      <label className="text-[10px] block mb-1">Badge Label</label>
+                      <input
+                        type="text"
+                        value={selectedElement.badgeLabel}
+                        onChange={(e) => updateElement(selectedElement.id, { badgeLabel: e.target.value })}
+                        className="w-full text-xs p-1 border-2 border-[#808080] border-t-black border-l-black"
+                        placeholder="Visitors"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] block mb-1">Badge Color</label>
+                      <div className="flex gap-1">
+                        <input
+                          type="color"
+                          value={tempColor || (selectedElement.badgeColor || '%23263759').replace('%23', '#')}
+                          onChange={(e) => setTempColor(e.target.value)}
+                          className="flex-1 h-8 border-2 border-[#808080]"
+                        />
+                        <button
+                          onClick={() => { updateElement(selectedElement.id, { badgeColor: (tempColor || (selectedElement.badgeColor || '%23263759').replace('%23', '#')).replace('#', '%23') }); setTempColor(null); }}
+                          className="px-2 text-xs bg-blue-200 border border-black hover:bg-blue-300"
+                        >
+                          Set
+                        </button>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-[10px] block mb-1">Badge Style</label>
+                      <select
+                        value={selectedElement.badgeStyle || 'flat-square'}
+                        onChange={(e) => updateElement(selectedElement.id, { badgeStyle: e.target.value })}
+                        className="w-full text-xs p-1 border-2 border-[#808080] border-t-black border-l-black"
+                      >
+                        <option value="flat-square">Flat Square</option>
+                        <option value="plastic">Plastic</option>
+                        <option value="default">Default</option>
+                        <option value="flat">Flat</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-[10px] block mb-1">Label Style</label>
+                      <select
+                        value={selectedElement.badgeLabelStyle || 'default'}
+                        onChange={(e) => updateElement(selectedElement.id, { badgeLabelStyle: e.target.value })}
+                        className="w-full text-xs p-1 border-2 border-[#808080] border-t-black border-l-black"
+                      >
+                        <option value="default">Default</option>
+                        <option value="upper">Upper</option>
+                        <option value="lower">Lower</option>
+                        <option value="none">None</option>
+                      </select>
+                    </div>
                   </div>
                 )}
                 {selectedElement.type === 'image' && (<div><label className="text-[10px] block">Image URL</label><input type="text" value={selectedElement.src || ''} onChange={(e) => updateElement(selectedElement.id, { src: e.target.value })} className="w-full text-xs p-1 border-2 border-[#808080] border-t-black border-l-black font-mono" placeholder="https://..." /></div>)}

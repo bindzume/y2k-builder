@@ -230,7 +230,19 @@ const DraggableElement = ({ element, isSelected, globalSelectedId, onSelect, onU
              <div className="flex gap-2 text-[10px] text-blue-800 underline"><span>&lt; Prev</span><span>Hub</span><span>Next &gt;</span></div>
           </div>
       );
-      case 'counter': return <div className="w-full h-full bg-black text-[#00FF00] font-mono flex items-center justify-center tracking-widest text-lg border-2 border-[#808080] border-inset pointer-events-none">004521</div>;
+      case 'counter': {
+        const uniqueCode = element.uniqueCode || 'unique-code';
+        const label = element.badgeLabel || '';
+        const color = element.badgeColor || '%23263759';
+        const style = element.badgeStyle || 'flat-square';
+        const labelStyle = element.badgeLabelStyle || 'default';
+        const badgeUrl = `https://api.visitorbadge.io/api/visitors?path=${uniqueCode}&label=${encodeURIComponent(label)}&countColor=${color}&style=${style}&labelStyle=${labelStyle}`;
+        return (
+          <div className="w-full h-full flex items-center justify-center pointer-events-none">
+            <img src={badgeUrl} alt="Visitor Counter" className="max-w-full max-h-full object-contain" />
+          </div>
+        );
+      }
       case 'marquee': return <div className="w-full h-full flex items-center bg-inherit text-inherit overflow-hidden"><marquee scrollamount="5" className="w-full" dangerouslySetInnerHTML={{ __html: element.content }} /></div>;
       case 'custom-html': return <div className="w-full h-full pointer-events-none overflow-auto" dangerouslySetInnerHTML={{ __html: element.content }} />;
       default: return <div className="w-full h-full pointer-events-none overflow-hidden" />;
@@ -245,7 +257,7 @@ const DraggableElement = ({ element, isSelected, globalSelectedId, onSelect, onU
       onClick={(e) => e.stopPropagation()}
     >
       {renderContent()}
-      {element.href && (
+      {element.href && element.type !== 'counter' && (
         <div className="absolute top-0 right-0 p-0.5 bg-blue-600 z-50">
            <LinkIcon size={8} className="text-white" />
         </div>

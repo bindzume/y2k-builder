@@ -482,7 +482,20 @@ export default function App() {
     if (type === 'box') { baseStyle.borderTopWidth = 2; baseStyle.borderRightWidth = 2; baseStyle.borderBottomWidth = 2; baseStyle.borderLeftWidth = 2; }
     if (type === 'hr') { width = 200; height = 4; baseStyle.backgroundColor = '#000000'; }
     if (type === 'webring') { width = 150; height = 60; content = 'Cool Webring'; }
-    if (type === 'counter') { width = 120; height = 40; }
+    if (type === 'counter') {
+      width = 150;
+      height = 40;
+      // Generate a random unique code for the counter
+      const uniqueCode = `visitor_${Math.random().toString(36).substring(2, 15)}`;
+      customProps = {
+        ...customProps,
+        uniqueCode,
+        badgeLabel: 'Visitors',
+        badgeColor: '%23263759',
+        badgeStyle: 'flat-square',
+        badgeLabelStyle: 'default'
+      };
+    }
     if (type === 'guestbook') { width = 250; height = 200; content = 'My Guestbook'; baseStyle.borderTopWidth = 2; baseStyle.borderRightWidth = 2; baseStyle.borderBottomWidth = 2; baseStyle.borderLeftWidth = 2; baseStyle.borderStyle = 'dashed'; }
     if (type === 'image') { width = 150; height = 150; }
     if (type === 'custom-html') { width = 300; height = 100; content = '<div>Paste your HTML here...</div>'; baseStyle.borderTopWidth = 1; baseStyle.borderRightWidth = 1; baseStyle.borderBottomWidth = 1; baseStyle.borderLeftWidth = 1; baseStyle.borderStyle = 'dashed'; baseStyle.borderColor = '#999999'; }

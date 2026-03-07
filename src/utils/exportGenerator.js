@@ -187,7 +187,16 @@ export const generateExportCode = (elements, bgImage, bgImageStyle, bgImageTileS
         else if (el.type === 'marquee') { content = `<marquee scrollamount="5" style="width: 100%;">${String(el.content || "")}</marquee>`; }
         else if (el.type === 'button') { content = String(el.content || ""); }
         else if (el.type === 'hr') { content = ''; }
-        else if (el.type === 'counter') { content = `004521`; }
+        else if (el.type === 'counter') {
+            const uniqueCode = el.uniqueCode || 'unique-code';
+            const label = el.badgeLabel || 'Visitors';
+            const color = el.badgeColor || '%23263759';
+            const style = el.badgeStyle || 'flat-square';
+            const labelStyle = el.badgeLabelStyle || 'default';
+            const badgeUrl = `https://api.visitorbadge.io/api/visitors?path=${uniqueCode}&label=${encodeURIComponent(label)}&countColor=${color}&style=${style}&labelStyle=${labelStyle}`;
+            const linkUrl = `https://visitorbadge.io/status?path=${uniqueCode}`;
+            content = `<a href="${linkUrl}"><img src="${badgeUrl}" alt="Visitor Counter" style="max-width: 100%; max-height: 100%; object-fit: contain;" /></a>`;
+        }
         else if (el.type === 'webring') {
             content = `
                 <div style="display:flex; flex-direction:column; height:100%; align-items:center; justify-content:center; border:2px outset white; padding:2px;">
@@ -214,7 +223,7 @@ export const generateExportCode = (elements, bgImage, bgImageStyle, bgImageTileS
     }
 
     const tag = (el.type === 'hr' || el.type === 'table') ? 'div' : (el.tagName || 'div');
-    if (el.href && el.type !== 'guestbook') {
+    if (el.href && el.type !== 'guestbook' && el.type !== 'counter') {
       // FIX: Use inherit to ensure #id styles flow into the anchor correctly
       return `<a id="${el.id}" href="${el.href}" target="_blank">${content}</a>`;
     }
