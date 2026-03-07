@@ -8,8 +8,8 @@ import {
 const LeftSidebar = ({
   undo, redo, historyIndex, historyLength,
   addElement, pasteElement, clipboard,
-  bgImage, handleBgDrop,
-  bgMusic, bgMusicName, handleAudioDrop,
+  bgImage, bgImageStyle, setBgImageStyle, bgImageTileSize, setBgImageTileSize, handleBgDrop,
+  bgMusic, bgMusicName, bgMusicMode, setBgMusicMode, handleAudioDrop,
   cursor, handleCursorDrop,
   pageTitle, setPageTitle,
   pageColor, setPageColor,
@@ -52,9 +52,64 @@ const LeftSidebar = ({
           <div onDragOver={e => e.preventDefault()} onDrop={handleBgDrop} className="group relative border-2 border-dashed border-gray-500 bg-[#e0e0e0] p-2 text-center text-xs text-gray-600 hover:bg-white cursor-pointer">
             {bgImage ? (<img src={bgImage} alt="bg" className="w-full h-12 object-cover border border-gray-400 mb-1" />) : (<div className="flex flex-col items-center py-2"><ImageIcon size={16} className="mb-1 opacity-50" /><span>Drop Background</span></div>)}
           </div>
+          {bgImage && (
+            <div className="bg-[#f0f0f0] border border-gray-400 p-2 text-[10px] space-y-2">
+              <div>
+                <label className="font-bold block mb-1">BG Style:</label>
+                <select
+                  value={bgImageStyle}
+                  onChange={(e) => setBgImageStyle(e.target.value)}
+                  className="w-full text-[10px] p-1 border border-gray-600"
+                >
+                  <option value="cover">Cover (Fill)</option>
+                  <option value="contain">Contain (Fit)</option>
+                  <option value="repeat">Repeat (Small Tile)</option>
+                  <option value="tile">Tile (Custom)</option>
+                  <option value="center">Center (No Repeat)</option>
+                </select>
+              </div>
+              {bgImageStyle === 'tile' && (
+                <div>
+                  <label className="font-bold block mb-1">Tile Size (px):</label>
+                  <input
+                    type="number"
+                    value={bgImageTileSize}
+                    onChange={(e) => setBgImageTileSize(parseInt(e.target.value) || 200)}
+                    className="w-full text-[10px] p-1 border border-gray-600"
+                    min="10"
+                    max="1000"
+                  />
+                </div>
+              )}
+            </div>
+          )}
           <div onDragOver={e => e.preventDefault()} onDrop={handleAudioDrop} className="group relative border-2 border-dashed border-gray-500 bg-[#e0e0e0] p-2 text-center text-xs text-gray-600 hover:bg-white cursor-pointer">
             <div className="flex flex-col items-center py-2"><Music size={16} className={`mb-1 ${bgMusic ? 'text-blue-600 animate-pulse' : 'opacity-50'}`} /><span>{bgMusicName || 'Drop MP3 Audio'}</span></div>
           </div>
+          {bgMusic && (
+            <div className="bg-[#f0f0f0] border border-gray-400 p-2 text-[10px]">
+              <label className="font-bold block mb-1">Audio Mode:</label>
+              <div className="flex gap-1">
+                <button
+                  onClick={() => setBgMusicMode('webaudio')}
+                  className={`flex-1 px-2 py-1 border border-black text-[9px] ${bgMusicMode === 'webaudio' ? 'bg-blue-200 font-bold' : 'bg-white'}`}
+                  title="Seamless looping using Web Audio API"
+                >
+                  Seamless
+                </button>
+                <button
+                  onClick={() => setBgMusicMode('audio-tag')}
+                  className={`flex-1 px-2 py-1 border border-black text-[9px] ${bgMusicMode === 'audio-tag' ? 'bg-blue-200 font-bold' : 'bg-white'}`}
+                  title="Standard HTML5 audio tag with controls"
+                >
+                  &lt;audio&gt;
+                </button>
+              </div>
+              <div className="text-[8px] text-gray-600 mt-1">
+                {bgMusicMode === 'webaudio' ? 'Perfect loop, no gap' : 'Visible controls, slight gap'}
+              </div>
+            </div>
+          )}
            <div onDragOver={e => e.preventDefault()} onDrop={handleCursorDrop} className="group relative border-2 border-dashed border-gray-500 bg-[#e0e0e0] p-2 text-center text-xs text-gray-600 hover:bg-white cursor-pointer">
              {cursor ? (<div className="flex items-center justify-center h-8"><img src={cursor} alt="cursor" className="w-6 h-6 object-contain" /></div>) : (<div className="flex flex-col items-center py-2"><MousePointer2 size={16} className="mb-1 opacity-50" /><span>Drop Cursor</span></div>)}
           </div>

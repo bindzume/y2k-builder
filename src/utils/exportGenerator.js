@@ -1,4 +1,4 @@
-export const generateExportCode = (elements, bgImage, bgMusic, cursor, pageTitle, pageHeight, pagePadding, pageMargin, pageColor) => {
+export const generateExportCode = (elements, bgImage, bgImageStyle, bgImageTileSize, bgMusic, bgMusicMode, cursor, pageTitle, pageHeight, pagePadding, pageMargin, pageColor) => {
   const allElements = elements;
   const rootElements = elements.filter(el => !el.parentId);
 
@@ -221,6 +221,26 @@ export const generateExportCode = (elements, bgImage, bgMusic, cursor, pageTitle
 
   const htmlContent = rootElements.map(el => renderElementHtml(el)).join('\n');
 
+  // Generate background style based on bgImageStyle
+  const getBackgroundStyle = () => {
+    if (!bgImage) return '';
+
+    switch (bgImageStyle) {
+      case 'cover':
+        return 'background-size: cover; background-position: center; background-repeat: no-repeat;';
+      case 'contain':
+        return 'background-size: contain; background-position: center; background-repeat: no-repeat;';
+      case 'repeat':
+        return 'background-size: auto; background-repeat: repeat;';
+      case 'tile':
+        return `background-size: ${bgImageTileSize}px ${bgImageTileSize}px; background-repeat: repeat;`;
+      case 'center':
+        return 'background-size: auto; background-position: center; background-repeat: no-repeat;';
+      default:
+        return 'background-size: cover; background-position: center; background-repeat: no-repeat;';
+    }
+  };
+
   return `<!DOCTYPE html>
 <html>
 <head>
@@ -236,7 +256,7 @@ export const generateExportCode = (elements, bgImage, bgMusic, cursor, pageTitle
       overflow-x: hidden;
       background-color: ${pageColor};
       ${bgImage ? `background-image: url('${bgImage}');` : ''}
-      background-size: cover;
+      ${bgImage ? getBackgroundStyle() : ''}
       ${cursor ? `cursor: url('${cursor}'), auto;` : ''}
     }
     .page-wrapper {
@@ -255,12 +275,19 @@ export const generateExportCode = (elements, bgImage, bgMusic, cursor, pageTitle
 </head>
 <body>
 
-    ${bgMusic ? `
+    ${bgMusic ? (bgMusicMode === 'audio-tag' ? `
+  <!-- Background Music: HTML5 Audio Tag -->
+  <audio controls loop autoplay style="position: fixed; bottom: 10px; right: 10px; z-index: 9999;">
+    <source src="${bgMusic}" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+  ` : `
+  <!-- Background Music: Web Audio API (Seamless Loop) -->
   <script>
     // Wait for the user to interact with the page to bypass Autoplay blockers
     document.addEventListener('mousemove', function initAudio() {
       const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      
+
       fetch('${bgMusic}')
         .then(response => response.arrayBuffer())
         .then(arrayBuffer => audioCtx.decodeAudioData(arrayBuffer))
@@ -277,7 +304,7 @@ export const generateExportCode = (elements, bgImage, bgMusic, cursor, pageTitle
       document.removeEventListener('click', initAudio);
     }, { once: true });
   </script>
-  ` : ''}
+  `) : ''}
   <div class="page-wrapper">
     ${htmlContent}
   </div>

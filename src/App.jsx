@@ -15,8 +15,11 @@ export default function App() {
 
   const [selectedId, setSelectedId] = useState(null);
   const [bgImage, setBgImage] = useState(null);
+  const [bgImageStyle, setBgImageStyle] = useState('cover'); // 'cover', 'contain', 'repeat', 'tile', 'center'
+  const [bgImageTileSize, setBgImageTileSize] = useState(200);
   const [bgMusic, setBgMusic] = useState(null);
   const [bgMusicName, setBgMusicName] = useState('');
+  const [bgMusicMode, setBgMusicMode] = useState('webaudio'); // 'webaudio' or 'audio-tag'
   const [cursor, setCursor] = useState(null);
   const [pageTitle, setPageTitle] = useState('My Y2K Website');
   const [snapToGrid, setSnapToGrid] = useState(false);
@@ -43,8 +46,11 @@ export default function App() {
         setPageMargin(data.pageMargin || 0);
         setPageColor(data.pageColor || '#c0c0c0');
         setBgImage(data.bgImage);
+        setBgImageStyle(data.bgImageStyle || 'cover');
+        setBgImageTileSize(data.bgImageTileSize || 200);
         setBgMusic(data.bgMusic);
         setBgMusicName(data.bgMusicName || '');
+        setBgMusicMode(data.bgMusicMode || 'webaudio');
         setCursor(data.cursor);
       } catch (e) { console.error("Failed to load save", e); }
     }
@@ -184,7 +190,7 @@ export default function App() {
   const saveProject = () => {
     const data = {
       elements, pageTitle, pageHeight, pagePadding, pageMargin, pageColor,
-      bgImage, bgMusic, bgMusicName, cursor
+      bgImage, bgImageStyle, bgImageTileSize, bgMusic, bgMusicName, bgMusicMode, cursor
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   };
@@ -202,14 +208,14 @@ export default function App() {
   };
 
   const handleSample = () => {
-    const code = generateExportCode(elements, bgImage, bgMusic, cursor, pageTitle, pageHeight, pagePadding, pageMargin, pageColor);
+    const code = generateExportCode(elements, bgImage, bgImageStyle, bgImageTileSize, bgMusic, bgMusicMode, cursor, pageTitle, pageHeight, pagePadding, pageMargin, pageColor);
     const blob = new Blob([code], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
     window.open(url, '_blank');
   };
 
   const handleExport = () => {
-    const code = generateExportCode(elements, bgImage, bgMusic, cursor, pageTitle, pageHeight, pagePadding, pageMargin, pageColor);
+    const code = generateExportCode(elements, bgImage, bgImageStyle, bgImageTileSize, bgMusic, bgMusicMode, cursor, pageTitle, pageHeight, pagePadding, pageMargin, pageColor);
     const blob = new Blob([code], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -322,9 +328,15 @@ export default function App() {
         pasteElement={pasteElement}
         clipboard={clipboard}
         bgImage={bgImage}
+        bgImageStyle={bgImageStyle}
+        setBgImageStyle={setBgImageStyle}
+        bgImageTileSize={bgImageTileSize}
+        setBgImageTileSize={setBgImageTileSize}
         handleBgDrop={handleBgDrop}
         bgMusic={bgMusic}
         bgMusicName={bgMusicName}
+        bgMusicMode={bgMusicMode}
+        setBgMusicMode={setBgMusicMode}
         handleAudioDrop={handleAudioDrop}
         cursor={cursor}
         handleCursorDrop={handleCursorDrop}
@@ -356,6 +368,8 @@ export default function App() {
         handleCanvasDrop={handleCanvasDrop}
         pageColor={pageColor}
         bgImage={bgImage}
+        bgImageStyle={bgImageStyle}
+        bgImageTileSize={bgImageTileSize}
         cursor={cursor}
         pageHeight={pageHeight}
         pagePadding={pagePadding}
