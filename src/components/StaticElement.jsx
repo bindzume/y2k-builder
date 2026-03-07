@@ -22,11 +22,23 @@ const StaticElement = ({ element, globalSelectedId, onSelect, onUpdate, allEleme
   useEffect(() => {
     if (!isResizing) return;
     const handleMouseMove = (e) => {
-      const dx = e.clientX - startPos.current.x;
-      const dy = e.clientY - startPos.current.y;
+      let newW = startDims.current.w + (e.clientX - startPos.current.x);
+      let newH = startDims.current.h + (e.clientY - startPos.current.y);
+
+      // --- ASPECT RATIO LOCKING LOGIC ---
+      if (element.lockAspectRatio && startDims.current.h > 0) {
+        const ratio = startDims.current.w / startDims.current.h;
+        
+        if (Math.abs(e.clientX - startPos.current.x) > Math.abs(e.clientY - startPos.current.y)) {
+          newH = newW / ratio;
+        } else {
+          newW = newH * ratio;
+        }
+      }
+
       onUpdate(element.id, {
-        width: Math.max(20, startDims.current.w + dx),
-        height: Math.max(2, startDims.current.h + dy)
+        width: Math.max(20, newW),
+        height: Math.max(2, newH)
       });
     };
     const handleMouseUp = () => setIsResizing(false);

@@ -41,11 +41,33 @@ const DraggableElement = ({ element, isSelected, globalSelectedId, onSelect, onU
       } else if (isResizing) {
         let newW = startDims.current.w + (e.clientX - startPos.current.x);
         let newH = startDims.current.h + (e.clientY - startPos.current.y);
+        
         if (element.fullWidth) newW = element.width;
+
+        // --- NEW ASPECT RATIO LOCKING LOGIC ---
+        if (element.lockAspectRatio) {
+          const ratio = startDims.current.w / startDims.current.h;
+          
+          // Determine which direction the user dragged the most to scale smoothly
+          if (Math.abs(e.clientX - startPos.current.x) > Math.abs(e.clientY - startPos.current.y)) {
+            newH = newW / ratio;
+          } else {
+            newW = newH * ratio;
+          }
+        }
+
         if (snapToGrid) {
           if (!element.fullWidth) newW = Math.round(newW / 20) * 20;
-          newH = Math.round(newH / 20) * 20;
+          
+          if (!element.lockAspectRatio) {
+            newH = Math.round(newH / 20) * 20;
+          } else {
+            // If aspect ratio is locked, snap the width to grid, but calculate exact height
+            const ratio = startDims.current.w / startDims.current.h;
+            newH = newW / ratio; 
+          }
         }
+
         onUpdate(element.id, { width: Math.max(20, newW), height: Math.max(2, newH) });
       }
     };

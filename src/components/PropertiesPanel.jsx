@@ -252,6 +252,40 @@ const PropertiesPanel = ({
                 <label className="text-xs font-bold">Element Content</label>
                 {(selectedElement.type === 'text' || selectedElement.type === 'marquee' || selectedElement.type === 'button' || selectedElement.type === 'webring') && (<div className="border border-gray-400"><RichTextEditor content={selectedElement.content} onChange={(html) => updateElement(selectedElement.id, { content: html })} /></div>)}
                 {selectedElement.type === 'image' && (<div><label className="text-[10px] block">Image URL</label><input type="text" value={selectedElement.src || ''} onChange={(e) => updateElement(selectedElement.id, { src: e.target.value })} className="w-full text-xs p-1 border-2 border-[#808080] border-t-black border-l-black font-mono" placeholder="https://..." /></div>)}
+                {selectedElement.type === 'image' && (
+  <div className="space-y-2 mb-2 pb-2 border-b border-gray-400">
+    <label className="text-xs font-bold flex items-center gap-1">
+      Image Settings
+    </label>
+    
+    <button 
+      onClick={() => {
+        // Load the image in memory to get its true native dimensions
+        const img = new Image();
+        img.onload = () => {
+          updateElement(selectedElement.id, { 
+            width: img.naturalWidth, 
+            height: img.naturalHeight 
+          });
+        };
+        img.src = selectedElement.src;
+      }} 
+      className="w-full flex items-center justify-center gap-1 px-2 py-1 bg-gray-200 border border-black text-[10px] hover:bg-gray-300"
+    >
+      <Maximize2 size={12} /> Snap to Native Resolution
+    </button>
+
+    <div className="flex items-center gap-2 mt-2">
+      <input 
+        type="checkbox" 
+        id="lockAspectToggle" 
+        checked={selectedElement.lockAspectRatio || false} 
+        onChange={(e) => updateElement(selectedElement.id, { lockAspectRatio: e.target.checked })} 
+      />
+      <label htmlFor="lockAspectToggle" className="text-xs font-bold">Lock Aspect Ratio</label>
+    </div>
+  </div>
+)}
                 {(selectedElement.type === 'button' || selectedElement.type === 'text' || selectedElement.type === 'image') && (<div><label className="text-[10px] block">Link URL</label><input type="text" placeholder="https://..." value={selectedElement.href || ''} onChange={(e) => updateElement(selectedElement.id, { href: e.target.value })} className="w-full text-xs p-1 border-2 border-[#808080] border-t-black border-l-black font-mono text-blue-800" /></div>)}
 
                 <div className="flex items-center gap-2 mt-2">
