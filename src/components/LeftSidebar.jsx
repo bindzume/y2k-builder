@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
   MousePointer2, Type, Image as ImageIcon, Box, Music, Minus, Globe, Hash, BookOpen,
   BoxSelect, Table, Move, Monitor, Save, RotateCcw, Eye, Download, Undo2, Redo2,
-  ClipboardPaste, X, Plus, FolderOpen, Pencil, Trash2, Code
+  ClipboardPaste, X, Plus, FolderOpen, Pencil, Trash2, Code, Upload
 } from 'lucide-react';
 
 const LeftSidebar = ({
@@ -17,9 +17,12 @@ const LeftSidebar = ({
   pagePadding, setPagePadding,
   pageMargin, setPageMargin,
   saveProject, clearProject,
-  handleSample, handleExport,
+  handleSample, handleExport, handleExportJSON, handleImportJSON,
+  handleExportAll, handleImportAll,
   projects, currentProjectId, createNewProject, switchProject, renameProject, deleteProject,
 }) => {
+  const fileInputRef = useRef(null);
+  const backupInputRef = useRef(null);
   const [showProjectList, setShowProjectList] = useState(false);
   const [renamingProjectId, setRenamingProjectId] = useState(null);
   const [renameValue, setRenameValue] = useState('');
@@ -296,8 +299,20 @@ const LeftSidebar = ({
               <button onClick={saveProject} className="flex items-center justify-center gap-1 px-1 py-1.5 bg-green-200 border-2 border-black font-bold text-[10px] hover:bg-green-300"><Save size={12} /> Save Project</button>
               <button onClick={clearProject} className="flex items-center justify-center gap-1 px-1 py-1.5 bg-red-100 border-2 border-black font-bold text-[10px] hover:bg-red-200"><RotateCcw size={12} /> Clear Page</button>
          </div>
+         <input ref={fileInputRef} type="file" accept=".json" onChange={(e) => { handleImportJSON(e.target.files[0]); e.target.value = ''; }} className="hidden" />
+         <input ref={backupInputRef} type="file" accept=".json" onChange={(e) => { handleImportAll(e.target.files[0]); e.target.value = ''; }} className="hidden" />
          <button onClick={handleSample} className="w-full flex items-center justify-center gap-2 px-2 py-2 bg-[#c0c0c0] border-t-2 border-l-2 border-white border-b-2 border-r-2 border-black font-bold text-sm hover:bg-[#d0d0d0]"><Eye size={16} /> Sample HTML</button>
          <button onClick={handleExport} className="w-full flex items-center justify-center gap-2 px-2 py-2 bg-[#c0c0c0] border-t-2 border-l-2 border-white border-b-2 border-r-2 border-black font-bold text-sm hover:bg-[#d0d0d0]"><Download size={16} /> Export HTML</button>
+         <div className="text-xs font-bold text-gray-600 mb-1">Project</div>
+         <div className="grid grid-cols-2 gap-1">
+           <button onClick={handleExportJSON} className="flex items-center justify-center gap-1 px-2 py-1.5 bg-green-100 border-2 border-black text-xs hover:bg-green-200"><Download size={12} /> Save</button>
+           <button onClick={() => fileInputRef.current?.click()} className="flex items-center justify-center gap-1 px-2 py-1.5 bg-blue-100 border-2 border-black text-xs hover:bg-blue-200"><Upload size={12} /> Load</button>
+         </div>
+         <div className="text-xs font-bold text-gray-600 mb-1 mt-2">All Projects</div>
+         <div className="grid grid-cols-2 gap-1">
+           <button onClick={handleExportAll} className="flex items-center justify-center gap-1 px-2 py-1.5 bg-purple-100 border-2 border-black text-xs hover:bg-purple-200"><Download size={12} /> Backup</button>
+           <button onClick={() => backupInputRef.current?.click()} className="flex items-center justify-center gap-1 px-2 py-1.5 bg-orange-100 border-2 border-black text-xs hover:bg-orange-200"><Upload size={12} /> Restore</button>
+         </div>
       </div>
     </div>
   );

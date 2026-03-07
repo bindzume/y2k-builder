@@ -458,6 +458,56 @@ export default function App() {
     a.href = url; a.download = 'index.html'; a.click();
   };
 
+  const handleExportJSON = () => {
+    const data = getCurrentProjectData();
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${pageTitle.replace(/[^a-z0-9]/gi, '_')}.json`;
+    a.click();
+  };
+
+  const handleImportJSON = async (file) => {
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      loadProjectData(data);
+    } catch (e) {
+      alert('Failed to import: Invalid JSON file');
+    }
+  };
+
+  const handleExportAll = () => {
+    const allData = {
+      projects: projects,
+      currentProjectId: currentProjectId
+    };
+    const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'y2k-builder-backup.json';
+    a.click();
+  };
+
+  const handleImportAll = async (file) => {
+    if (!file) return;
+    if (!confirm('This will replace all your projects. Continue?')) return;
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      setProjects(data.projects);
+      setCurrentProjectId(data.currentProjectId);
+      loadProjectData(data.projects[data.currentProjectId].data);
+      localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(data.projects));
+      localStorage.setItem(CURRENT_PROJECT_KEY, data.currentProjectId);
+    } catch (e) {
+      alert('Failed to import: Invalid backup file');
+    }
+  };
+
   const addElement = (type, customProps = {}) => {
     const newId = `el_${Date.now()}`;
     const baseStyle = {
@@ -607,6 +657,10 @@ export default function App() {
         clearProject={clearProject}
         handleSample={handleSample}
         handleExport={handleExport}
+        handleExportJSON={handleExportJSON}
+        handleImportJSON={handleImportJSON}
+        handleExportAll={handleExportAll}
+        handleImportAll={handleImportAll}
         projects={projects}
         currentProjectId={currentProjectId}
         createNewProject={createNewProject}
