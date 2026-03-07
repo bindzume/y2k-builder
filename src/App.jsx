@@ -6,6 +6,7 @@ import LeftSidebar from './components/LeftSidebar';
 import Canvas from './components/Canvas';
 import PropertiesPanel from './components/PropertiesPanel';
 
+
 export default function App() {
   const [elements, setElements] = useState([]);
   const [history, setHistory] = useState([[]]);
@@ -248,7 +249,7 @@ export default function App() {
       width, height, zIndex: elements.length + 1, content, href: '', isBlinking: false, fullWidth: false, fullHeight: false, flexGrow: false,
       tagName: 'div', parentId: null, flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', gap: 5, rows: 2, cols: 2,
       rotation: 0, skewX: 0, skewY: 0, opacity: 1, blinkSpeed: 1,
-      src: type === 'image' ? 'https://placehold.co/150x150?text=IMG' : null, style: baseStyle, ...customProps
+      src: type === 'image' ? null : null, style: baseStyle, ...customProps
     };
     saveToHistory([...elements, newElement]);
     setSelectedId(newId);

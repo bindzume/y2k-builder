@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link as LinkIcon } from 'lucide-react';
-
+import placeholder from '../assets/400x400.png';
 const StaticElement = ({ element, globalSelectedId, onSelect, onUpdate, allElements }) => {
   const isSelected = element.id === globalSelectedId;
   const [isResizing, setIsResizing] = useState(false);
@@ -136,7 +136,7 @@ const StaticElement = ({ element, globalSelectedId, onSelect, onUpdate, allEleme
     }
 
     switch (element.type) {
-      case 'image': return <img src={element.src} alt="" className="w-full h-full object-cover pointer-events-none" />;
+      case 'image': return <img src={element.src ? element.src : placeholder} alt="" className="w-full h-full object-cover pointer-events-none" />;
       case 'text': return <div className="pointer-events-none break-words overflow-hidden" dangerouslySetInnerHTML={{ __html: element.content }} />;
       case 'button': return <div className="flex items-center justify-center pointer-events-none text-inherit h-full" dangerouslySetInnerHTML={{ __html: element.content }} />;
       case 'hr': return <div className="w-full h-full" />; // Background handled by wrapper

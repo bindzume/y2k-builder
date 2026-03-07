@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link as LinkIcon } from 'lucide-react';
 import StaticElement from './StaticElement';
-
+import placeholder from '../assets/400x400.png';
 const DraggableElement = ({ element, isSelected, globalSelectedId, onSelect, onUpdate, snapToGrid, onDragEnd, allElements }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
@@ -164,7 +164,7 @@ const DraggableElement = ({ element, isSelected, globalSelectedId, onSelect, onU
     }
 
     switch (element.type) {
-      case 'image': return <img src={element.src} alt="" className="w-full h-full object-cover pointer-events-none" />;
+      case 'image': return <img src={element.src ? element.src : placeholder} alt="" className="w-full h-full object-cover pointer-events-none" />;
       case 'text': return <div className="pointer-events-none break-words overflow-hidden" dangerouslySetInnerHTML={{ __html: element.content }} />;
       case 'button': return <div className="flex items-center justify-center pointer-events-none text-inherit h-full" dangerouslySetInnerHTML={{ __html: element.content }} />;
       case 'hr': return <div className="w-full h-full" />; // Background handled by wrapper
