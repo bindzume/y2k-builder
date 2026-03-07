@@ -254,6 +254,30 @@ export const generateExportCode = (elements, bgImage, bgMusic, cursor, pageTitle
   </style>
 </head>
 <body>
+
+    ${bgMusic ? `
+  <script>
+    // Wait for the user to interact with the page to bypass Autoplay blockers
+    document.addEventListener('mousemove', function initAudio() {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      
+      fetch('${bgMusic}')
+        .then(response => response.arrayBuffer())
+        .then(arrayBuffer => audioCtx.decodeAudioData(arrayBuffer))
+        .then(audioBuffer => {
+          const source = audioCtx.createBufferSource();
+          source.buffer = audioBuffer;
+          source.loop = true; // This does a TRUE seamless memory loop!
+          source.connect(audioCtx.destination);
+          source.start();
+        })
+        .catch(e => console.error("Audio error:", e));
+
+      // Remove the listener so it only triggers once
+      document.removeEventListener('click', initAudio);
+    }, { once: true });
+  </script>
+  ` : ''}
   <div class="page-wrapper">
     ${htmlContent}
   </div>
