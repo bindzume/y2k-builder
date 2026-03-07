@@ -207,6 +207,19 @@ export default function App() {
     }
   };
 
+  const clearBgImage = () => {
+    setBgImage(null);
+  };
+
+  const clearBgMusic = () => {
+    setBgMusic(null);
+    setBgMusicName('');
+  };
+
+  const clearCursor = () => {
+    setCursor(null);
+  };
+
   const handleSample = () => {
     const code = generateExportCode(elements, bgImage, bgImageStyle, bgImageTileSize, bgMusic, bgMusicMode, cursor, pageTitle, pageHeight, pagePadding, pageMargin, pageColor);
     const blob = new Blob([code], { type: 'text/html' });
@@ -333,13 +346,16 @@ export default function App() {
         bgImageTileSize={bgImageTileSize}
         setBgImageTileSize={setBgImageTileSize}
         handleBgDrop={handleBgDrop}
+        clearBgImage={clearBgImage}
         bgMusic={bgMusic}
         bgMusicName={bgMusicName}
         bgMusicMode={bgMusicMode}
         setBgMusicMode={setBgMusicMode}
         handleAudioDrop={handleAudioDrop}
+        clearBgMusic={clearBgMusic}
         cursor={cursor}
         handleCursorDrop={handleCursorDrop}
+        clearCursor={clearCursor}
         pageTitle={pageTitle}
         setPageTitle={setPageTitle}
         pageColor={pageColor}

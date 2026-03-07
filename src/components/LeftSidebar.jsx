@@ -2,15 +2,15 @@ import React from 'react';
 import {
   MousePointer2, Type, Image as ImageIcon, Box, Music, Minus, Globe, Hash, BookOpen,
   BoxSelect, Table, Move, Monitor, Save, RotateCcw, Eye, Download, Undo2, Redo2,
-  ClipboardPaste
+  ClipboardPaste, X
 } from 'lucide-react';
 
 const LeftSidebar = ({
   undo, redo, historyIndex, historyLength,
   addElement, pasteElement, clipboard,
-  bgImage, bgImageStyle, setBgImageStyle, bgImageTileSize, setBgImageTileSize, handleBgDrop,
-  bgMusic, bgMusicName, bgMusicMode, setBgMusicMode, handleAudioDrop,
-  cursor, handleCursorDrop,
+  bgImage, bgImageStyle, setBgImageStyle, bgImageTileSize, setBgImageTileSize, handleBgDrop, clearBgImage,
+  bgMusic, bgMusicName, bgMusicMode, setBgMusicMode, handleAudioDrop, clearBgMusic,
+  cursor, handleCursorDrop, clearCursor,
   pageTitle, setPageTitle,
   pageColor, setPageColor,
   pageHeight, setPageHeight,
@@ -49,8 +49,19 @@ const LeftSidebar = ({
 
         <div className="space-y-2">
           <div className="text-xs font-bold text-gray-600 mb-1 border-b border-gray-400 pb-1">ASSETS</div>
-          <div onDragOver={e => e.preventDefault()} onDrop={handleBgDrop} className="group relative border-2 border-dashed border-gray-500 bg-[#e0e0e0] p-2 text-center text-xs text-gray-600 hover:bg-white cursor-pointer">
-            {bgImage ? (<img src={bgImage} alt="bg" className="w-full h-12 object-cover border border-gray-400 mb-1" />) : (<div className="flex flex-col items-center py-2"><ImageIcon size={16} className="mb-1 opacity-50" /><span>Drop Background</span></div>)}
+          <div className="relative">
+            <div onDragOver={e => e.preventDefault()} onDrop={handleBgDrop} className="group relative border-2 border-dashed border-gray-500 bg-[#e0e0e0] p-2 text-center text-xs text-gray-600 hover:bg-white cursor-pointer">
+              {bgImage ? (<img src={bgImage} alt="bg" className="w-full h-12 object-cover border border-gray-400 mb-1" />) : (<div className="flex flex-col items-center py-2"><ImageIcon size={16} className="mb-1 opacity-50" /><span>Drop Background</span></div>)}
+            </div>
+            {bgImage && (
+              <button
+                onClick={clearBgImage}
+                className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-0.5"
+                title="Clear background image"
+              >
+                <X size={12} />
+              </button>
+            )}
           </div>
           {bgImage && (
             <div className="bg-[#f0f0f0] border border-gray-400 p-2 text-[10px] space-y-2">
@@ -83,8 +94,19 @@ const LeftSidebar = ({
               )}
             </div>
           )}
-          <div onDragOver={e => e.preventDefault()} onDrop={handleAudioDrop} className="group relative border-2 border-dashed border-gray-500 bg-[#e0e0e0] p-2 text-center text-xs text-gray-600 hover:bg-white cursor-pointer">
-            <div className="flex flex-col items-center py-2"><Music size={16} className={`mb-1 ${bgMusic ? 'text-blue-600 animate-pulse' : 'opacity-50'}`} /><span>{bgMusicName || 'Drop MP3 Audio'}</span></div>
+          <div className="relative">
+            <div onDragOver={e => e.preventDefault()} onDrop={handleAudioDrop} className="group relative border-2 border-dashed border-gray-500 bg-[#e0e0e0] p-2 text-center text-xs text-gray-600 hover:bg-white cursor-pointer">
+              <div className="flex flex-col items-center py-2"><Music size={16} className={`mb-1 ${bgMusic ? 'text-blue-600 animate-pulse' : 'opacity-50'}`} /><span>{bgMusicName || 'Drop MP3 Audio'}</span></div>
+            </div>
+            {bgMusic && (
+              <button
+                onClick={clearBgMusic}
+                className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-0.5"
+                title="Clear background music"
+              >
+                <X size={12} />
+              </button>
+            )}
           </div>
           {bgMusic && (
             <div className="bg-[#f0f0f0] border border-gray-400 p-2 text-[10px]">
@@ -110,8 +132,19 @@ const LeftSidebar = ({
               </div>
             </div>
           )}
-           <div onDragOver={e => e.preventDefault()} onDrop={handleCursorDrop} className="group relative border-2 border-dashed border-gray-500 bg-[#e0e0e0] p-2 text-center text-xs text-gray-600 hover:bg-white cursor-pointer">
-             {cursor ? (<div className="flex items-center justify-center h-8"><img src={cursor} alt="cursor" className="w-6 h-6 object-contain" /></div>) : (<div className="flex flex-col items-center py-2"><MousePointer2 size={16} className="mb-1 opacity-50" /><span>Drop Cursor</span></div>)}
+          <div className="relative">
+            <div onDragOver={e => e.preventDefault()} onDrop={handleCursorDrop} className="group relative border-2 border-dashed border-gray-500 bg-[#e0e0e0] p-2 text-center text-xs text-gray-600 hover:bg-white cursor-pointer">
+              {cursor ? (<div className="flex items-center justify-center h-8"><img src={cursor} alt="cursor" className="w-6 h-6 object-contain" /></div>) : (<div className="flex flex-col items-center py-2"><MousePointer2 size={16} className="mb-1 opacity-50" /><span>Drop Cursor</span></div>)}
+            </div>
+            {cursor && (
+              <button
+                onClick={clearCursor}
+                className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-0.5"
+                title="Clear custom cursor"
+              >
+                <X size={12} />
+              </button>
+            )}
           </div>
         </div>
 
