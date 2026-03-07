@@ -148,6 +148,7 @@ const PropertiesPanel = ({
                 </div>
             </div>
 
+            {!['image', 'counter', 'hr', 'table', 'flex'].includes(selectedElement.type) && (
             <div className="space-y-2 mb-2 pb-2 border-b border-gray-400">
               <label className="text-xs font-bold flex items-center gap-1"><Type size={12}/> Typography</label>
 
@@ -202,14 +203,18 @@ const PropertiesPanel = ({
                     </div>
                   )}
               </div>
-              <div className="flex gap-1 items-center mt-2">
+            </div>
+            )}
+
+            <div className="space-y-2 mb-2 pb-2 border-b border-gray-400">
+              <div className="flex gap-1 items-center">
                 <label className="text-[10px] w-12">Blink Speed:</label>
                 <div className="flex-1 flex flex-col gap-1">
                     <input type="range" min="0.1" max="3" step="0.1" value={selectedElement.blinkSpeed || 1} onChange={(e) => updateElement(selectedElement.id, { blinkSpeed: parseFloat(e.target.value) })} className="w-full h-1 bg-gray-400 rounded-lg appearance-none cursor-pointer" />
                     <div className="flex justify-between text-[8px]"><span>Faster</span><span>{selectedElement.blinkSpeed || 1}s</span><span>Slower</span></div>
                 </div>
               </div>
-              {selectedElement.type === 'text' && (<div className="flex items-center gap-2 mt-1"><input type="checkbox" id="blinkToggle" checked={selectedElement.isBlinking || false} onChange={(e) => updateElement(selectedElement.id, { isBlinking: e.target.checked })} /><label htmlFor="blinkToggle" className="text-xs font-bold text-red-600 flex items-center gap-1"><Zap size={10} /> Blinking?</label></div>)}
+              <div className="flex items-center gap-2"><input type="checkbox" id="blinkToggle" checked={selectedElement.isBlinking || false} onChange={(e) => updateElement(selectedElement.id, { isBlinking: e.target.checked })} /><label htmlFor="blinkToggle" className="text-xs font-bold text-red-600 flex items-center gap-1"><Zap size={10} /> Blinking?</label></div>
             </div>
 
             <div className="space-y-1 mb-2 pb-2 border-b border-gray-400"><label className="text-xs font-bold flex items-center gap-1"><Scaling size={12}/> Sizes (px)</label>
