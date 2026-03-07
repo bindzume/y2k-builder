@@ -23,11 +23,12 @@ const LeftSidebar = ({
   const [showProjectList, setShowProjectList] = useState(false);
   const [renamingProjectId, setRenamingProjectId] = useState(null);
   const [renameValue, setRenameValue] = useState('');
-  const [frozenProjectList, setFrozenProjectList] = useState([]);
   const dropdownRef = useRef(null);
 
   const currentProject = projects[currentProjectId];
-  const projectList = showProjectList ? frozenProjectList : Object.values(projects).sort((a, b) => b.lastModified - a.lastModified);
+  const projectList = Object.values(projects).sort((a, b) => 
+  a.name.localeCompare(b.name)
+);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -82,15 +83,9 @@ const LeftSidebar = ({
           </div>
           <div className="relative" ref={dropdownRef}>
             <button
-              onClick={() => {
-                if (!showProjectList) {
-                  // Freeze the project list order when opening the dropdown
-                  setFrozenProjectList(Object.values(projects).sort((a, b) => b.lastModified - a.lastModified));
-                }
-                setShowProjectList(!showProjectList);
-              }}
-              className="w-full flex items-center justify-between gap-2 px-2 py-1.5 bg-white border-2 border-gray-400 text-sm hover:bg-gray-50"
-            >
+  onClick={() => setShowProjectList(!showProjectList)}
+  className="w-full flex items-center justify-between gap-2 px-2 py-1.5 bg-white border-2 border-gray-400 text-sm hover:bg-gray-50"
+>
               <div className="flex items-center gap-2 truncate">
                 <FolderOpen size={14} />
                 <span className="truncate">{currentProject?.name || 'Select Project'}</span>
