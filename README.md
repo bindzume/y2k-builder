@@ -20,6 +20,8 @@ If you are developing a production application, we recommend using TypeScript wi
 - Make the background image have parity with export (done)
 - Add toggle between <audio> tag and using javascript with better looping (done)
 - have multiple sites in localstorage (done)
-- import site
+- import site (done)
 - on hover make things change or make image popup
 - clear cursor, background image, and audio (done)
+- Need ability to have images on foreground and background. so instead of being flex, it just goes right on top
+- need to make flex boxes clickable like buttons. All tools should be clickable

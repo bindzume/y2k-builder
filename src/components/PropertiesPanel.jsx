@@ -406,7 +406,8 @@ const PropertiesPanel = ({
     </div>
   </div>
 )}
-                {(selectedElement.type === 'button' || selectedElement.type === 'text' || selectedElement.type === 'image') && (<div><label className="text-[10px] block">Link URL</label><input type="text" placeholder="https://..." value={selectedElement.href || ''} onChange={(e) => updateElement(selectedElement.id, { href: e.target.value })} className="w-full text-xs p-1 border-2 border-[#808080] border-t-black border-l-black font-mono text-blue-800" /></div>)}
+                {/* Show Link URL for all element types so any tool can become clickable */}
+                <div><label className="text-[10px] block">Link URL</label><input type="text" placeholder="https://..." value={selectedElement.href || ''} onChange={(e) => updateElement(selectedElement.id, { href: e.target.value })} className="w-full text-xs p-1 border-2 border-[#808080] border-t-black border-l-black font-mono text-blue-800" /></div>
 
                 <div className="flex items-center gap-2 mt-2">
                     <input type="checkbox" id="fullWidthToggle" checked={selectedElement.fullWidth || false} onChange={(e) => updateElement(selectedElement.id, { fullWidth: e.target.checked })} />
