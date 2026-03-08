@@ -17,7 +17,7 @@ export const exportWebsiteAsZip = async (
   };
 
   // Process the single project (no subfolder needed for images since it's just one page)
-  processProjectForZip(zip, projectData, htmlFilename || 'index', '');
+  processProjectForZip(zip, projectData, htmlFilename || 'index', htmlFilename);
 
   // Generate and save
   const content = await zip.generateAsync({ type: "blob" });
