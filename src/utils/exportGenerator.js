@@ -98,15 +98,15 @@ export const generateExportCode = (elements, bgImage, bgImageStyle, bgImageTileS
 
       // sizing / repeat
       if (imgStyle === 'cover') {
-        backgroundStyle += ` background-size: ${el.style.bgGradientEnabled ? 'auto, cover' : 'cover'}; background-repeat: no-repeat; background-position: center;`;
+        backgroundStyle += ` background-size: ${el.style.bgGradientEnabled ? 'auto, cover' : 'cover'}; background-repeat: repeat; background-position: center;`;
       } else if (imgStyle === 'contain') {
-        backgroundStyle += ` background-size: ${el.style.bgGradientEnabled ? 'auto, contain' : 'contain'}; background-repeat: no-repeat; background-position: center;`;
+        backgroundStyle += ` background-size: ${el.style.bgGradientEnabled ? 'auto, contain' : 'contain'}; background-repeat: repeat; background-position: center;`;
       } else if (imgStyle === 'repeat') {
         backgroundStyle += ` background-size: ${el.style.bgGradientEnabled ? 'auto, ' + tileSize + 'px ' + tileSize + 'px' : `${tileSize}px ${tileSize}px`}; background-repeat: repeat;`;
       } else if (imgStyle === 'center') {
-        backgroundStyle += ` background-size: auto; background-position: center; background-repeat: no-repeat;`;
+        backgroundStyle += ` background-size: auto; background-position: center; background-repeat: repeat;`;
       } else {
-        backgroundStyle += ` background-size: auto; background-repeat: no-repeat;`;
+        backgroundStyle += ` background-size: auto; background-repeat: repeat;`;
       }
     }
 
@@ -133,7 +133,7 @@ export const generateExportCode = (elements, bgImage, bgImageStyle, bgImageTileS
         display: ${el.style.display || 'block'};
         ${widthCss}
         ${heightCss}
-        overflow: hidden;
+        overflow: visible;
         ${backgroundStyle}
         ${colorStyle}
         ${borderCss}
@@ -274,7 +274,7 @@ export const generateExportCode = (elements, bgImage, bgImageStyle, bgImageTileS
             `;
         } else if (el.type === 'guestbook') {
             content = `
-                <div style="padding:10px; height:100%; overflow:auto;">
+                <div style="padding:10px; height:100%; overflow:hidden;">
                 <div style="text-align:center; font-weight:bold; margin-bottom:10px;">${String(el.content || "")}</div>
                 <div id="msgs_${el.id}" style="margin-top:10px; text-align:left; font-size:0.9em;">
                     <div style="border-bottom:1px dashed #999; margin-bottom:5px;"><b>CoolGuy99:</b> Awesome site!!</div>
@@ -301,17 +301,17 @@ export const generateExportCode = (elements, bgImage, bgImageStyle, bgImageTileS
 
     switch (bgImageStyle) {
       case 'cover':
-        return 'background-size: cover; background-position: center; background-repeat: no-repeat;';
+        return 'background-size: cover; background-position: center; background-repeat: repeat;';
       case 'contain':
-        return 'background-size: contain; background-position: center; background-repeat: no-repeat;';
+        return 'background-size: contain; background-position: center; background-repeat: repeat;';
       case 'repeat':
         return 'background-size: auto; background-repeat: repeat;';
       case 'tile':
         return `background-size: ${bgImageTileSize}px ${bgImageTileSize}px; background-repeat: repeat;`;
       case 'center':
-        return 'background-size: auto; background-position: center; background-repeat: no-repeat;';
+        return 'background-size: auto; background-position: center; background-repeat: repeat;';
       default:
-        return 'background-size: cover; background-position: center; background-repeat: no-repeat;';
+        return 'background-size: cover; background-position: center; background-repeat: repeat;';
     }
   };
 
@@ -327,7 +327,7 @@ export const generateExportCode = (elements, bgImage, bgImageStyle, bgImageTileS
       padding: 0;
       width: calc(100vw - ${pageMargin * 2}px);
       min-height: ${pageHeight}px;
-      overflow-x: hidden;
+      overflow: auto;
       background-color: ${pageColor};
       ${bgImage ? `background-image: url('${bgImage}');` : ''}
       ${bgImage ? getBackgroundStyle() : ''}
