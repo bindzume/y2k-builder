@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
   MousePointer2, Type, Image as ImageIcon, Box, Music, Minus, Globe, Hash, BookOpen,
   BoxSelect, Table, Move, Monitor, Save, RotateCcw, Eye, Download, Undo2, Redo2,
-  ClipboardPaste, X, Plus, FolderOpen, Pencil, Trash2, Code, Upload
+  ClipboardPaste, X, Plus, FolderOpen, Pencil, Trash2, Code, Upload, FileArchive, FileJson
 } from 'lucide-react';
 
 const LeftSidebar = ({
@@ -10,15 +10,18 @@ const LeftSidebar = ({
   addElement, pasteElement, clipboard,
   bgImage, bgImageStyle, setBgImageStyle, bgImageTileSize, setBgImageTileSize, handleBgDrop, clearBgImage,
   bgMusic, bgMusicName, bgMusicMode, setBgMusicMode, handleAudioDrop, clearBgMusic,
-  keepAudioBase64, setKeepAudioBase64, // <-- NEW PROPS HERE
+  keepAudioBase64, setKeepAudioBase64, 
+  keepImagesBase64, setKeepImagesBase64, // <-- NEW
   cursor, handleCursorDrop, clearCursor,
   pageTitle, setPageTitle,
+  htmlFilename, setHtmlFilename, // <-- NEW
   pageColor, setPageColor,
   pageHeight, setPageHeight,
   pagePadding, setPagePadding,
   pageMargin, setPageMargin,
   saveProject, clearProject,
-  handleSample, handleExport, handleExportJSON, handleImportJSON,
+  handleSample, handleExport, handleExportEntireSite, // <-- NEW
+  handleExportJSON, handleImportJSON,
   handleExportAll, handleImportAll,
   projects, currentProjectId, createNewProject, switchProject, renameProject, deleteProject,
 }) => {
@@ -31,8 +34,8 @@ const LeftSidebar = ({
 
   const currentProject = projects[currentProjectId];
   const projectList = Object.values(projects).sort((a, b) => 
-  a.name.localeCompare(b.name)
-);
+    a.name.localeCompare(b.name)
+  );
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -68,7 +71,7 @@ const LeftSidebar = ({
   };
 
   return (
-    <div className="w-64 flex flex-col border-r-2 border-white border-r-[#808080] shadow-[inset_-2px_-2px_#ffffff,inset_2px_2px_#dfdfdf]">
+    <div className="w-64 flex flex-col border-r-2 border-white border-r-[#808080] shadow-[inset_-2px_-2px_#ffffff,inset_2px_2px_#dfdfdf] h-screen">
       <div className="bg-gradient-to-r from-[#000080] to-[#1084d0] text-white p-1 px-2 font-bold text-sm flex items-center gap-2">
         <Monitor size={14} /> WebBuilder 2000
       </div>
@@ -84,9 +87,9 @@ const LeftSidebar = ({
           </div>
           <div className="relative" ref={dropdownRef}>
             <button
-  onClick={() => setShowProjectList(!showProjectList)}
-  className="w-full flex items-center justify-between gap-2 px-2 py-1.5 bg-white border-2 border-gray-400 text-sm hover:bg-gray-50"
->
+              onClick={() => setShowProjectList(!showProjectList)}
+              className="w-full flex items-center justify-between gap-2 px-2 py-1.5 bg-white border-2 border-gray-400 text-sm hover:bg-gray-50"
+            >
               <div className="flex items-center gap-2 truncate">
                 <FolderOpen size={14} />
                 <span className="truncate">{currentProject?.name || 'Select Project'}</span>
@@ -135,8 +138,8 @@ const LeftSidebar = ({
         </div>
 
         <div className="flex gap-1 mb-2">
-          <button onClick={undo} disabled={historyIndex === 0} className={`flex-1 flex items-center justify-center gap-1 p-1 bg-[#c0c0c0] border-2 border-black text-xs ${historyIndex === 0 ? 'opacity-30' : 'hover:bg-[#d0d0d0]'}`} title="Undo (Ctrl+Z)"><Undo2 size={12}/> Undo</button>
-          <button onClick={redo} disabled={historyIndex === historyLength - 1} className={`flex-1 flex items-center justify-center gap-1 p-1 bg-[#c0c0c0] border-2 border-black text-xs ${historyIndex === historyLength - 1 ? 'opacity-30' : 'hover:bg-[#d0d0d0]'}`} title="Redo (Ctrl+Y)"><Redo2 size={12}/> Redo</button>
+          <button onClick={undo} disabled={historyIndex === 0} className={`flex-1 flex items-center justify-center gap-1 p-1 bg-[#c0c0c0] border-2 border-white border-b-black border-r-black text-xs ${historyIndex === 0 ? 'opacity-30' : 'hover:bg-[#d0d0d0] active:border-t-black active:border-l-black active:border-b-white active:border-r-white'}`} title="Undo (Ctrl+Z)"><Undo2 size={12}/> Undo</button>
+          <button onClick={redo} disabled={historyIndex === historyLength - 1} className={`flex-1 flex items-center justify-center gap-1 p-1 bg-[#c0c0c0] border-2 border-white border-b-black border-r-black text-xs ${historyIndex === historyLength - 1 ? 'opacity-30' : 'hover:bg-[#d0d0d0] active:border-t-black active:border-l-black active:border-b-white active:border-r-white'}`} title="Redo (Ctrl+Y)"><Redo2 size={12}/> Redo</button>
         </div>
 
         <div className="space-y-2">
@@ -204,7 +207,6 @@ const LeftSidebar = ({
                 <button onClick={() => setBgMusicMode('audio-tag')} className={`flex-1 px-1 py-1 border border-black text-[9px] ${bgMusicMode === 'audio-tag' ? 'bg-blue-200 font-bold' : 'bg-white'}`} title="Standard HTML5 audio tag with controls">&lt;audio&gt;</button>
               </div>
               
-              {/* --- NEW CHECKBOX RIGHT HERE --- */}
               <div className="mt-2 pt-2 border-t border-gray-400 flex items-start gap-1">
                 <input 
                   type="checkbox" 
@@ -230,40 +232,96 @@ const LeftSidebar = ({
           </div>
         </div>
 
+        {/* --- PAGE SETTINGS UPDATE --- */}
         <div className="pt-4 mt-4 border-t border-gray-400">
            <div className="text-xs font-bold text-gray-600 mb-1">PAGE SETTINGS</div>
            <div className="space-y-1">
-              <input type="text" value={pageTitle} onChange={(e) => setPageTitle(e.target.value)} className="w-full text-xs p-1 border-2 border-[#808080] border-t-black border-l-black" placeholder="Page Title" />
+              
+              {/* NEW: Filename Input */}
               <div className="flex items-center gap-1">
-                  <label className="text-[10px]">Color:</label>
-                  <input type="color" value={pageColor} onChange={(e) => setPageColor(e.target.value)} className="flex-1 h-6 border-2 border-[#808080]" />
+                  <label className="text-[10px] w-14">Filename:</label>
+                  <div className="flex-1 flex items-center bg-white border-2 border-[#808080] border-t-black border-l-black">
+                     <input 
+                       type="text" 
+                       value={htmlFilename} 
+                       onChange={(e) => setHtmlFilename(e.target.value.toLowerCase().replace(/[^a-z0-9-_]/g, ''))} 
+                       className="w-full text-xs p-1 outline-none" 
+                       placeholder="index" 
+                     />
+                     <span className="text-[10px] text-gray-500 pr-1">.html</span>
+                  </div>
               </div>
-              <div className="flex items-center gap-1"><label className="text-[10px]">Height:</label><input type="number" value={pageHeight} onChange={(e) => setPageHeight(parseInt(e.target.value) || 800)} className="flex-1 text-xs p-1 border-2 border-[#808080] border-t-black border-l-black" /></div>
-              <div className="flex items-center gap-1"><label className="text-[10px]">Padding:</label><input type="number" value={pagePadding} onChange={(e) => setPagePadding(parseInt(e.target.value) || 0)} className="flex-1 text-xs p-1 border-2 border-[#808080] border-t-black border-l-black" /></div>
-              <div className="flex items-center gap-1"><label className="text-[10px]">Margin:</label><input type="number" value={pageMargin} onChange={(e) => setPageMargin(parseInt(e.target.value) || 0)} className="flex-1 text-xs p-1 border-2 border-[#808080] border-t-black border-l-black" /></div>
+
+              <div className="flex items-center gap-1 mt-1 mb-2">
+                 <label className="text-[10px] w-14">Title:</label>
+                 <input type="text" value={pageTitle} onChange={(e) => setPageTitle(e.target.value)} className="flex-1 text-xs p-1 border-2 border-[#808080] border-t-black border-l-black" placeholder="Page Title" />
+              </div>
+              
+              <div className="flex items-center gap-1"><label className="text-[10px] w-14">Color:</label><input type="color" value={pageColor} onChange={(e) => setPageColor(e.target.value)} className="flex-1 h-6 border-2 border-[#808080]" /></div>
+              <div className="flex items-center gap-1"><label className="text-[10px] w-14">Height:</label><input type="number" value={pageHeight} onChange={(e) => setPageHeight(parseInt(e.target.value) || 800)} className="flex-1 text-xs p-1 border-2 border-[#808080] border-t-black border-l-black" /></div>
+              <div className="flex items-center gap-1"><label className="text-[10px] w-14">Padding:</label><input type="number" value={pagePadding} onChange={(e) => setPagePadding(parseInt(e.target.value) || 0)} className="flex-1 text-xs p-1 border-2 border-[#808080] border-t-black border-l-black" /></div>
+              <div className="flex items-center gap-1"><label className="text-[10px] w-14">Margin:</label><input type="number" value={pageMargin} onChange={(e) => setPageMargin(parseInt(e.target.value) || 0)} className="flex-1 text-xs p-1 border-2 border-[#808080] border-t-black border-l-black" /></div>
+
+              {/* NEW: Image Base64 Checkbox */}
+              <div className="mt-2 pt-2 border-t border-gray-300">
+                <div className="flex items-start gap-1">
+                  <input 
+                    type="checkbox" 
+                    id="keepImgBase64" 
+                    checked={keepImagesBase64} 
+                    onChange={(e) => setKeepImagesBase64(e.target.checked)} 
+                    className="mt-0.5 cursor-pointer"
+                  />
+                  <label htmlFor="keepImgBase64" className="text-[9px] text-gray-700 leading-tight cursor-pointer">
+                    Embed all images as Base64 <br/><span className="text-[8px] text-gray-500">(1 big HTML file, no image folder)</span>
+                  </label>
+                </div>
+              </div>
            </div>
         </div>
       </div>
 
-      <div className="p-2 border-t border-white border-t-[#808080] space-y-2">
-         <div className="grid grid-cols-2 gap-1">
-              <button onClick={saveProject} className="flex items-center justify-center gap-1 px-1 py-1.5 bg-green-200 border-2 border-black font-bold text-[10px] hover:bg-green-300"><Save size={12} /> Save Project</button>
-              <button onClick={clearProject} className="flex items-center justify-center gap-1 px-1 py-1.5 bg-red-100 border-2 border-black font-bold text-[10px] hover:bg-red-200"><RotateCcw size={12} /> Clear Page</button>
+      {/* --- NEW ORGANIZED EXPORT SECTION --- */}
+      <div className="p-2 border-t border-white border-t-[#808080] bg-[#d4d0c8] space-y-3 overflow-y-auto max-h-[40vh]">
+         
+         {/* Live Preview / Save State */}
+         <div className="grid grid-cols-2 gap-1 mb-2">
+            <button onClick={handleSample} className="flex items-center justify-center gap-1 px-1 py-1.5 bg-[#c0c0c0] border-2 border-white border-b-black border-r-black font-bold text-[10px] hover:bg-[#d0d0d0] active:border-t-black active:border-l-black active:border-b-white active:border-r-white"><Eye size={12} /> Preview</button>
+            <button onClick={saveProject} className="flex items-center justify-center gap-1 px-1 py-1.5 bg-green-200 border-2 border-white border-b-black border-r-black font-bold text-[10px] hover:bg-green-300 active:border-t-black active:border-l-black active:border-b-white active:border-r-white"><Save size={12} /> Save Edits</button>
          </div>
+
+         {/* WEB EXPORTS */}
+         <div className="border border-gray-500 p-1.5 bg-[#e8e8e8]">
+            <div className="text-[10px] font-bold text-black mb-1 flex items-center gap-1"><Globe size={12}/> Publish to Web</div>
+            
+            <button onClick={handleExport} className="w-full mb-1 flex flex-col items-center justify-center px-2 py-1.5 bg-white border border-gray-400 hover:bg-blue-50 text-left">
+               <div className="font-bold text-[11px] text-blue-800 flex items-center gap-1 w-full"><Download size={10}/> Export Current Page</div>
+               <div className="text-[8px] text-gray-600 w-full leading-tight">Downloads just this page & its media.</div>
+            </button>
+
+            <button onClick={handleExportEntireSite} className="w-full flex flex-col items-center justify-center px-2 py-1.5 bg-white border border-gray-400 hover:bg-purple-50 text-left">
+               <div className="font-bold text-[11px] text-purple-800 flex items-center gap-1 w-full"><FileArchive size={10}/> Export Entire Site (ZIP)</div>
+               <div className="text-[8px] text-gray-600 w-full leading-tight">Zips all projects together for Neocities.</div>
+            </button>
+         </div>
+
+         {/* BUILDER SAVE/LOAD FILES */}
+         <div className="border border-gray-500 p-1.5 bg-[#e8e8e8]">
+            <div className="text-[10px] font-bold text-black mb-1 flex items-center gap-1"><FileJson size={12}/> Builder Files (JSON)</div>
+            
+            <div className="grid grid-cols-2 gap-1 mb-1">
+               <button onClick={handleExportJSON} className="flex items-center justify-center gap-1 px-2 py-1 bg-white border border-gray-400 text-[10px] hover:bg-gray-100" title="Save this project's raw data">Save Page</button>
+               <button onClick={() => fileInputRef.current?.click()} className="flex items-center justify-center gap-1 px-2 py-1 bg-white border border-gray-400 text-[10px] hover:bg-gray-100" title="Load a raw project file">Load Page</button>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-1">
+               <button onClick={handleExportAll} className="flex items-center justify-center gap-1 px-2 py-1 bg-white border border-gray-400 text-[10px] hover:bg-gray-100" title="Backup all projects">Backup All</button>
+               <button onClick={() => backupInputRef.current?.click()} className="flex items-center justify-center gap-1 px-2 py-1 bg-white border border-gray-400 text-[10px] hover:bg-gray-100" title="Restore all projects">Restore All</button>
+            </div>
+         </div>
+         
          <input ref={fileInputRef} type="file" accept=".json" onChange={(e) => { handleImportJSON(e.target.files[0]); e.target.value = ''; }} className="hidden" />
          <input ref={backupInputRef} type="file" accept=".json" onChange={(e) => { handleImportAll(e.target.files[0]); e.target.value = ''; }} className="hidden" />
-         <button onClick={handleSample} className="w-full flex items-center justify-center gap-2 px-2 py-2 bg-[#c0c0c0] border-t-2 border-l-2 border-white border-b-2 border-r-2 border-black font-bold text-sm hover:bg-[#d0d0d0]"><Eye size={16} /> Sample HTML</button>
-         <button onClick={handleExport} className="w-full flex items-center justify-center gap-2 px-2 py-2 bg-[#c0c0c0] border-t-2 border-l-2 border-white border-b-2 border-r-2 border-black font-bold text-sm hover:bg-[#d0d0d0]"><Download size={16} /> Export HTML</button>
-         <div className="text-xs font-bold text-gray-600 mb-1">Project</div>
-         <div className="grid grid-cols-2 gap-1">
-           <button onClick={handleExportJSON} className="flex items-center justify-center gap-1 px-2 py-1.5 bg-green-100 border-2 border-black text-xs hover:bg-green-200"><Download size={12} /> Save</button>
-           <button onClick={() => fileInputRef.current?.click()} className="flex items-center justify-center gap-1 px-2 py-1.5 bg-blue-100 border-2 border-black text-xs hover:bg-blue-200"><Upload size={12} /> Load</button>
-         </div>
-         <div className="text-xs font-bold text-gray-600 mb-1 mt-2">All Projects</div>
-         <div className="grid grid-cols-2 gap-1">
-           <button onClick={handleExportAll} className="flex items-center justify-center gap-1 px-2 py-1.5 bg-purple-100 border-2 border-black text-xs hover:bg-purple-200"><Download size={12} /> Backup</button>
-           <button onClick={() => backupInputRef.current?.click()} className="flex items-center justify-center gap-1 px-2 py-1.5 bg-orange-100 border-2 border-black text-xs hover:bg-orange-200"><Upload size={12} /> Restore</button>
-         </div>
       </div>
     </div>
   );

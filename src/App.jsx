@@ -3,6 +3,7 @@ import { STORAGE_KEY } from './utils/constants';
 import { fileToBase64, resizeForCursor } from './utils/fileHelpers';
 import { generateExportCode } from './utils/exportGenerator';
 import { exportWebsiteAsZip } from './utils/exportToZip';
+import { exportEntireSiteAsZip } from './utils/exportEntireSiteAsZip'; // <-- NEW IMPORT
 import LeftSidebar from './components/LeftSidebar';
 import Canvas from './components/Canvas';
 import PropertiesPanel from './components/PropertiesPanel';
@@ -35,8 +36,11 @@ export default function App() {
   const [pagePadding, setPagePadding] = useState(0);
   const [pageMargin, setPageMargin] = useState(0);
   const [pageColor, setPageColor] = useState('#ffffffff');
-  // Near the top of your App component where you declare your states
-  const [keepAudioBase64, setKeepAudioBase64] = useState(true); // Default to true so it stays Neocities-friendly by default
+  
+  // Export Settings State
+  const [keepAudioBase64, setKeepAudioBase64] = useState(true); 
+  const [htmlFilename, setHtmlFilename] = useState('index'); // <-- ADDED
+  const [keepImagesBase64, setKeepImagesBase64] = useState(false); // <-- ADDED
 
   const rootElements = useMemo(() => elements.filter(el => !el.parentId), [elements]);
   const selectedElement = elements.find(el => el.id === selectedId);
@@ -45,6 +49,8 @@ export default function App() {
   const getCurrentProjectData = () => ({
     elements,
     pageTitle,
+    htmlFilename, // <-- ADDED
+    keepImagesBase64, // <-- ADDED
     pageHeight,
     pagePadding,
     pageMargin,
@@ -64,6 +70,8 @@ export default function App() {
     setHistory([data.elements || []]);
     setHistoryIndex(0);
     setPageTitle(data.pageTitle || 'My Y2K Website');
+    setHtmlFilename(data.htmlFilename || 'index'); // <-- ADDED
+    setKeepImagesBase64(data.keepImagesBase64 || false); // <-- ADDED
     setPageHeight(data.pageHeight || 800);
     setPagePadding(data.pagePadding || 0);
     setPageMargin(data.pageMargin || 0);
@@ -77,30 +85,27 @@ export default function App() {
     setCursor(data.cursor);
   };
 
-  // Initialize projects from localStorage
-// Initialize projects from localForage (with localStorage migration)
+  // Initialize projects from localForage (with localStorage migration)
   useEffect(() => {
     const initializeStorage = async () => {
       try {
         let loadedProjects = {};
         let loadedCurrentId = null;
 
-        // 1. Try fetching from localForage (IndexedDB)
         const savedProjects = await localforage.getItem(PROJECTS_STORAGE_KEY);
         const savedCurrentId = await localforage.getItem(CURRENT_PROJECT_KEY);
 
         if (savedProjects) {
-          loadedProjects = savedProjects; // NO JSON.parse needed!
+          loadedProjects = savedProjects;
           loadedCurrentId = savedCurrentId;
         } else {
-          // 2. Fallback: Migrate from old localStorage to localForage
+          // Fallback: Migrate from old localStorage to localForage
           const legacyProjects = localStorage.getItem(PROJECTS_STORAGE_KEY);
           const oldSave = localStorage.getItem(STORAGE_KEY);
 
           if (legacyProjects) {
             loadedProjects = JSON.parse(legacyProjects);
             loadedCurrentId = localStorage.getItem(CURRENT_PROJECT_KEY);
-            // Save to new storage and clear old
             await localforage.setItem(PROJECTS_STORAGE_KEY, loadedProjects);
             await localforage.setItem(CURRENT_PROJECT_KEY, loadedCurrentId);
             localStorage.removeItem(PROJECTS_STORAGE_KEY);
@@ -120,7 +125,6 @@ export default function App() {
           }
         }
 
-        // 3. Create default if absolutely nothing exists
         if (Object.keys(loadedProjects).length === 0) {
           const projectId = `project_${Date.now()}`;
           loadedProjects = {
@@ -140,7 +144,6 @@ export default function App() {
         }
       } catch (e) {
         console.error("Failed to load projects", e);
-        // Default error fallback
         const projectId = `project_${Date.now()}`;
         setProjects({
           [projectId]: { id: projectId, name: 'Error Recovery', data: getCurrentProjectData(), lastModified: Date.now() }
@@ -152,13 +155,14 @@ export default function App() {
     initializeStorage();
   }, []);
 
-  // Define saveProject before using it in useEffect
   const saveProject = useCallback(() => {
     if (!currentProjectId) return;
 
     const projectData = {
       elements,
       pageTitle,
+      htmlFilename, // <-- ADDED
+      keepImagesBase64, // <-- ADDED
       pageHeight,
       pagePadding,
       pageMargin,
@@ -187,16 +191,11 @@ export default function App() {
 
       return updatedProjects;
     });
-  }, [currentProjectId, elements, pageTitle, pageHeight, pagePadding, pageMargin, pageColor, bgImage, bgImageStyle, bgImageTileSize, bgMusic, bgMusicName, bgMusicMode, cursor]);
+  }, [currentProjectId, elements, pageTitle, htmlFilename, keepImagesBase64, pageHeight, pagePadding, pageMargin, pageColor, bgImage, bgImageStyle, bgImageTileSize, bgMusic, bgMusicName, bgMusicMode, cursor]);
 
-  // Auto-save current project when important state changes
   useEffect(() => {
     if (!currentProjectId) return;
-
-    const timeoutId = setTimeout(() => {
-      saveProject();
-    }, 1000); // Debounce auto-save by 1 second
-
+    const timeoutId = setTimeout(() => { saveProject(); }, 1000);
     return () => clearTimeout(timeoutId);
   }, [currentProjectId, saveProject]);
 
@@ -332,10 +331,7 @@ export default function App() {
   };
 
   const createNewProject = () => {
-    // Save current project first
-    if (currentProjectId) {
-      saveProject();
-    }
+    if (currentProjectId) saveProject();
 
     const projectId = `project_${Date.now()}`;
     const newProject = {
@@ -344,6 +340,8 @@ export default function App() {
       data: {
         elements: [],
         pageTitle: 'New Website',
+        htmlFilename: 'index', // <-- ADDED
+        keepImagesBase64: false, // <-- ADDED
         pageHeight: 800,
         pagePadding: 0,
         pageMargin: 0,
@@ -370,12 +368,7 @@ export default function App() {
 
   const switchProject = (projectId) => {
     if (projectId === currentProjectId) return;
-
-    // Save current project before switching
-    if (currentProjectId) {
-      saveProject();
-    }
-
+    if (currentProjectId) saveProject();
     setCurrentProjectId(projectId);
     if (projects[projectId]) {
       loadProjectData(projects[projectId].data);
@@ -392,7 +385,6 @@ export default function App() {
         lastModified: Date.now()
       }
     };
-
     setProjects(updatedProjects);
     localforage.setItem(PROJECTS_STORAGE_KEY, updatedProjects);
   };
@@ -402,10 +394,7 @@ export default function App() {
       alert("You cannot delete the last project.");
       return;
     }
-
-    if (!confirm("Are you sure you want to delete this project? This cannot be undone.")) {
-      return;
-    }
+    if (!confirm("Are you sure you want to delete this project? This cannot be undone.")) return;
 
     const updatedProjects = { ...projects };
     delete updatedProjects[projectId];
@@ -413,7 +402,6 @@ export default function App() {
     setProjects(updatedProjects);
     localforage.setItem(PROJECTS_STORAGE_KEY, updatedProjects);
 
-    // If we deleted the current project, switch to another one
     if (projectId === currentProjectId) {
       const nextProjectId = Object.keys(updatedProjects)[0];
       setCurrentProjectId(nextProjectId);
@@ -435,6 +423,8 @@ export default function App() {
         setBgMusicMode('webaudio');
         setCursor(null);
         setPageTitle('My Y2K Website');
+        setHtmlFilename('index'); // <-- ADDED
+        setKeepImagesBase64(false); // <-- ADDED
         setPageHeight(800);
         setPagePadding(0);
         setPageMargin(0);
@@ -442,18 +432,9 @@ export default function App() {
     }
   };
 
-  const clearBgImage = () => {
-    setBgImage(null);
-  };
-
-  const clearBgMusic = () => {
-    setBgMusic(null);
-    setBgMusicName('');
-  };
-
-  const clearCursor = () => {
-    setCursor(null);
-  };
+  const clearBgImage = () => setBgImage(null);
+  const clearBgMusic = () => { setBgMusic(null); setBgMusicName(''); };
+  const clearCursor = () => setCursor(null);
 
   const handleSample = () => {
     const code = generateExportCode(elements, bgImage, bgImageStyle, bgImageTileSize, bgMusic, bgMusicMode, cursor, pageTitle, pageHeight, pagePadding, pageMargin, pageColor);
@@ -463,15 +444,25 @@ export default function App() {
   };
 
   const handleExport = () => {
-    const code = exportWebsiteAsZip(elements, bgImage, bgImageStyle, bgImageTileSize, bgMusic, bgMusicMode, cursor, pageTitle, pageHeight, pagePadding, pageMargin, pageColor, keepAudioBase64);
+    htmlFilename, // <-- ADDED
+    exportWebsiteAsZip(elements, bgImage, bgImageStyle, bgImageTileSize, bgMusic, bgMusicMode, cursor, pageTitle, pageHeight, pagePadding, pageMargin, pageColor, keepAudioBase64, htmlFilename, keepImagesBase64);
+  };
 
-    /*
-    const code = generateExportCode(elements, bgImage, bgImageStyle, bgImageTileSize, bgMusic, bgMusicMode, cursor, pageTitle, pageHeight, pagePadding, pageMargin, pageColor);
-    const blob = new Blob([code], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = 'index.html'; a.click();
-    */
+  // 👇 ADDED THIS NEW FUNCTION FOR ENTIRE SITE EXPORT 👇
+  const handleExportEntireSite = () => {
+    const hasIndexFile = Object.values(projects).some(project => {
+        const name = (project.data?.htmlFilename || project.name).toLowerCase();
+        return name === 'index' || name === 'index.html';
+    });
+
+    if (!hasIndexFile) {
+        const proceed = window.confirm(
+            "⚠️ WARNING: Missing Homepage!\n\nNone of your projects have the filename 'index'. Neocities requires an 'index.html' file to act as your main homepage.\n\nDo you want to download anyway?"
+        );
+        if (!proceed) return;
+    }
+
+    exportEntireSiteAsZip(projects, keepAudioBase64);
   };
 
   const handleExportJSON = () => {
@@ -496,10 +487,7 @@ export default function App() {
   };
 
   const handleExportAll = () => {
-    const allData = {
-      projects: projects,
-      currentProjectId: currentProjectId
-    };
+    const allData = { projects: projects, currentProjectId: currentProjectId };
     const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -549,18 +537,9 @@ export default function App() {
     if (type === 'hr') { width = 200; height = 4; baseStyle.backgroundColor = '#000000'; }
     if (type === 'webring') { width = 150; height = 60; content = 'Cool Webring'; }
     if (type === 'counter') {
-      width = 150;
-      height = 40;
-      // Generate a random unique code for the counter
+      width = 150; height = 40;
       const uniqueCode = `visitor_${Math.random().toString(36).substring(2, 15)}`;
-      customProps = {
-        ...customProps,
-        uniqueCode,
-        badgeLabel: 'Visitors',
-        badgeColor: '%23263759',
-        badgeStyle: 'flat-square',
-        badgeLabelStyle: 'default'
-      };
+      customProps = { ...customProps, uniqueCode, badgeLabel: 'Visitors', badgeColor: '%23263759', badgeStyle: 'flat-square', badgeLabelStyle: 'default' };
     }
     if (type === 'guestbook') { width = 250; height = 200; content = 'My Guestbook'; baseStyle.borderTopWidth = 2; baseStyle.borderRightWidth = 2; baseStyle.borderBottomWidth = 2; baseStyle.borderLeftWidth = 2; baseStyle.borderStyle = 'dashed'; }
     if (type === 'image') { width = 150; height = 150; }
@@ -638,6 +617,10 @@ export default function App() {
       <LeftSidebar
         keepAudioBase64={keepAudioBase64}
         setKeepAudioBase64={setKeepAudioBase64}
+        htmlFilename={htmlFilename} // <-- ADDED
+        setHtmlFilename={setHtmlFilename} // <-- ADDED
+        keepImagesBase64={keepImagesBase64} // <-- ADDED
+        setKeepImagesBase64={setKeepImagesBase64} // <-- ADDED
         undo={undo}
         redo={redo}
         historyIndex={historyIndex}
@@ -675,6 +658,7 @@ export default function App() {
         clearProject={clearProject}
         handleSample={handleSample}
         handleExport={handleExport}
+        handleExportEntireSite={handleExportEntireSite} // <-- ADDED
         handleExportJSON={handleExportJSON}
         handleImportJSON={handleImportJSON}
         handleExportAll={handleExportAll}

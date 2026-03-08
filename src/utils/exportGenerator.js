@@ -356,25 +356,54 @@ export const generateExportCode = (elements, bgImage, bgImageStyle, bgImageTileS
   </audio>
   ` : `
   <script>
-    // Wait for the user to interact with the page to bypass Autoplay blockers
-    document.addEventListener('mousemove', function initAudio() {
-      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+// --- Web Audio API Mode ---
+        let audioStarted = false;
+        
+        const initAudio = () => {
+          if (audioStarted) return; // Prevent multiple clicks from starting multiple tracks
+          audioStarted = true;
 
-      fetch('${bgMusic}')
-        .then(response => response.arrayBuffer())
-        .then(arrayBuffer => audioCtx.decodeAudioData(arrayBuffer))
-        .then(audioBuffer => {
-          const source = audioCtx.createBufferSource();
-          source.buffer = audioBuffer;
-          source.loop = true; // This does a TRUE seamless memory loop!
-          source.connect(audioCtx.destination);
-          source.start();
-        })
-        .catch(e => console.error("Audio error:", e));
+          const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          
+          // If the browser started it in a suspended state, wake it up!
+          if (audioCtx.state === 'suspended') {
+              audioCtx.resume();
+          }
 
-      // Remove the listener so it only triggers once
-      document.removeEventListener('mousemove', initAudio);
-    }, { once: true });
+          let savedOffset = parseFloat(sessionStorage.getItem('y2k_bgm_offset') || '0');
+
+          fetch('${bgMusic}')
+            .then(response => response.arrayBuffer())
+            .then(arrayBuffer => audioCtx.decodeAudioData(arrayBuffer))
+            .then(audioBuffer => {
+              const source = audioCtx.createBufferSource();
+              source.buffer = audioBuffer;
+              source.loop = true; 
+              
+              // Prevent math errors if duration is somehow 0
+              if (audioBuffer.duration > 0) {
+                  savedOffset = savedOffset % audioBuffer.duration;
+              }
+              
+              source.connect(audioCtx.destination);
+              source.start(0, savedOffset);
+              
+              const startTime = audioCtx.currentTime - savedOffset;
+              window.addEventListener('beforeunload', () => {
+                  sessionStorage.setItem('y2k_bgm_offset', audioCtx.currentTime - startTime);
+              });
+            })
+            .catch(e => {
+                console.error("Audio error:", e);
+                audioStarted = false; // Reset if it failed so they can try clicking again
+            });
+        };
+
+        // Listen for actual user interactions to unlock the audio!
+        document.addEventListener('click', initAudio, { once: true });
+        document.addEventListener('keydown', initAudio, { once: true });
+        document.addEventListener('touchstart', initAudio, { once: true });
+        document.addEventListener('mousemove', initAudio, { once: true });
   </script>
   `) : ''}
   <div class="page-wrapper">
