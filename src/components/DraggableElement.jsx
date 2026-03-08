@@ -292,13 +292,7 @@ const DraggableElement = ({ element, isSelected, globalSelectedId, onSelect, onU
       onMouseDown={handleMouseDown}
       onClick={(e) => e.stopPropagation()}
     >
-      {element.href && element.type !== 'counter' ? (
-        <a href={element.href} target="_blank" rel="noopener noreferrer" className="w-full h-full block no-underline text-inherit">
-          {rendered}
-        </a>
-      ) : (
-        rendered
-      )}
+      {rendered}
       {element.href && element.type !== 'counter' && (
         <div className="absolute top-0 right-0 p-0.5 bg-blue-600 z-50">
            <LinkIcon size={8} className="text-white" />
