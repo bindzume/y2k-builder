@@ -2,7 +2,8 @@
 This is a (heavily vibecoded) webapp that helps you build simple ugly websites without needing to master HTML or CSS
 
 Try it here: https://y2k-builder-742966517145.us-central1.run.app/
-Sample website: bindzume.neocities.org
+
+Sample website: https://bindzume.neocities.org
 
 ## Features:
 1. Project selector
