@@ -23,5 +23,7 @@ If you are developing a production application, we recommend using TypeScript wi
 - import site (done)
 - on hover make things change or make image popup
 - clear cursor, background image, and audio (done)
-- Need ability to have images on foreground and background. so instead of being flex, it just goes right on top
-- need to make flex boxes clickable like buttons. All tools should be clickable
+- Need ability to have images on foreground and background. so instead of being flex, it just goes right on top (done by making flexboxes have bgimage)
+- need to make flex boxes clickable like buttons. All tools should be clickable (done)
+- visual bug with marquee and links/text in canvas
+- when switching to <audio>, i see that there is a little audio widget that appears. might be best to get rid of <audio> tag altogether

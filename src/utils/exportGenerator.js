@@ -102,7 +102,7 @@ export const generateExportCode = (elements, bgImage, bgImageStyle, bgImageTileS
       } else if (imgStyle === 'contain') {
         backgroundStyle += ` background-size: ${el.style.bgGradientEnabled ? 'auto, contain' : 'contain'}; background-repeat: no-repeat; background-position: center;`;
       } else if (imgStyle === 'repeat') {
-        backgroundStyle += ` background-size: ${el.style.bgGradientEnabled ? 'auto, ${tileSize}px ${tileSize}px' : `${tileSize}px ${tileSize}px`}; background-repeat: repeat;`;
+        backgroundStyle += ` background-size: ${el.style.bgGradientEnabled ? 'auto, ' + tileSize + 'px ' + tileSize + 'px' : `${tileSize}px ${tileSize}px`}; background-repeat: repeat;`;
       } else if (imgStyle === 'center') {
         backgroundStyle += ` background-size: auto; background-position: center; background-repeat: no-repeat;`;
       } else {
@@ -159,18 +159,25 @@ export const generateExportCode = (elements, bgImage, bgImageStyle, bgImageTileS
 
   const styles = elements.map(el => getElementStyle(el)).join('\n');
 
-  // Generate marquee keyframes for flex elements with marquee enabled
+  // Generate PERFECT SEAMLESS marquee keyframes
   const marqueeKeyframes = elements
     .filter(el => el.type === 'flex' && el.marqueeEnabled)
     .map(el => {
       const direction = el.marqueeDirection || 'left';
       const animationName = `marquee-${direction}-${el.id}`;
       const axis = direction === 'left' || direction === 'right' ? 'X' : 'Y';
-      const sign = direction === 'left' || direction === 'up' ? '-' : '';
+      
+      // Calculate correct start/end points based on direction
+      let start = '0', end = '-50%';
+      if (direction === 'right' || direction === 'down') {
+        start = '-50%';
+        end = '0';
+      }
+
       return `
         @keyframes ${animationName} {
-          0% { transform: translate${axis}(0); }
-          100% { transform: translate${axis}(${sign}50%); }
+          0% { transform: translate${axis}(${start}); }
+          100% { transform: translate${axis}(${end}); }
         }
       `;
     })
@@ -183,11 +190,41 @@ export const generateExportCode = (elements, bgImage, bgImageStyle, bgImageTileS
 
     if (el.type === 'flex') {
       const childrenHtml = children.map(child => renderElementHtml(child)).join('\n');
+      
       if (el.marqueeEnabled && children.length > 0) {
         const direction = el.marqueeDirection || 'left';
         const speed = el.marqueeSpeed || 10;
         const animationName = `marquee-${direction}-${el.id}`;
-        content = `<div class="marquee-wrapper" style="display: flex; flex-direction: ${el.flexDirection || 'row'}; align-items: ${el.alignItems || 'stretch'}; gap: ${el.gap || 0}px; animation: ${animationName} ${speed}s linear infinite;">${childrenHtml}${childrenHtml}</div>`;
+        const isVertical = direction === 'up' || direction === 'down';
+        
+        // Match the padding to the gap exactly so the loops visually connect perfectly
+        const paddingCss = isVertical ? `padding-bottom: ${el.gap || 0}px;` : `padding-right: ${el.gap || 0}px;`;
+        
+        // Wrap a single instance of the content
+        const trackBlock = `
+          <div style="display: flex; flex-direction: ${el.flexDirection || 'row'}; align-items: ${el.alignItems || 'stretch'}; gap: ${el.gap || 0}px; ${paddingCss} flex-shrink: 0;">
+            ${childrenHtml}
+          </div>
+        `;
+        
+        // --- THE MEMORY CRASH FIX ---
+        // Dynamically calculate safe repeats based on string size. Max limit ~3 million chars.
+        const safeMaxChars = 3000000; 
+        let repeats = Math.max(2, Math.min(20, Math.floor(safeMaxChars / (trackBlock.length || 1))));
+        
+        // The repeats MUST be an even number so the CSS -50% translation aligns perfectly
+        if (repeats % 2 !== 0) {
+            repeats -= 1;
+        }
+
+        const duplicatedContent = trackBlock.repeat(repeats);
+
+        // Render the outer animated wrapper
+        content = `
+          <div class="marquee-wrapper" style="display: flex; flex-direction: ${isVertical ? 'column' : 'row'}; width: ${isVertical ? '100%' : 'max-content'}; height: ${isVertical ? 'max-content' : '100%'}; animation: ${animationName} ${speed}s linear infinite;">
+            ${duplicatedContent}
+          </div>
+        `;
       } else {
         content = childrenHtml;
       }
@@ -251,7 +288,6 @@ export const generateExportCode = (elements, bgImage, bgImageStyle, bgImageTileS
 
     const tag = (el.type === 'hr' || el.type === 'table') ? 'div' : (el.tagName || 'div');
     if (el.href && el.type !== 'guestbook' && el.type !== 'counter') {
-      // FIX: Use inherit to ensure #id styles flow into the anchor correctly
       return `<a id="${el.id}" href="${el.href}" target="_blank">${content}</a>`;
     }
     return `<${tag} id="${el.id}">${content}</${tag}>`;
@@ -314,13 +350,11 @@ export const generateExportCode = (elements, bgImage, bgImageStyle, bgImageTileS
 <body>
 
     ${bgMusic ? (bgMusicMode === 'audio-tag' ? `
-  <!-- Background Music: HTML5 Audio Tag -->
   <audio controls loop autoplay style="position: fixed; bottom: 10px; right: 10px; z-index: 9999;">
     <source src="${bgMusic}" type="audio/mpeg">
     Your browser does not support the audio element.
   </audio>
   ` : `
-  <!-- Background Music: Web Audio API (Seamless Loop) -->
   <script>
     // Wait for the user to interact with the page to bypass Autoplay blockers
     document.addEventListener('mousemove', function initAudio() {
@@ -339,7 +373,7 @@ export const generateExportCode = (elements, bgImage, bgImageStyle, bgImageTileS
         .catch(e => console.error("Audio error:", e));
 
       // Remove the listener so it only triggers once
-      document.removeEventListener('click', initAudio);
+      document.removeEventListener('mousemove', initAudio);
     }, { once: true });
   </script>
   `) : ''}
