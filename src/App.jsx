@@ -35,6 +35,8 @@ export default function App() {
   const [pagePadding, setPagePadding] = useState(0);
   const [pageMargin, setPageMargin] = useState(0);
   const [pageColor, setPageColor] = useState('#ffffffff');
+  // Near the top of your App component where you declare your states
+  const [keepAudioBase64, setKeepAudioBase64] = useState(true); // Default to true so it stays Neocities-friendly by default
 
   const rootElements = useMemo(() => elements.filter(el => !el.parentId), [elements]);
   const selectedElement = elements.find(el => el.id === selectedId);
@@ -461,7 +463,7 @@ export default function App() {
   };
 
   const handleExport = () => {
-    const code = exportWebsiteAsZip(elements, bgImage, bgImageStyle, bgImageTileSize, bgMusic, bgMusicMode, cursor, pageTitle, pageHeight, pagePadding, pageMargin, pageColor);
+    const code = exportWebsiteAsZip(elements, bgImage, bgImageStyle, bgImageTileSize, bgMusic, bgMusicMode, cursor, pageTitle, pageHeight, pagePadding, pageMargin, pageColor, keepAudioBase64);
 
     /*
     const code = generateExportCode(elements, bgImage, bgImageStyle, bgImageTileSize, bgMusic, bgMusicMode, cursor, pageTitle, pageHeight, pagePadding, pageMargin, pageColor);
@@ -634,6 +636,8 @@ export default function App() {
         <style>{`@keyframes blinker { 50% { opacity: 0; } } .blink-text { animation: blinker 1s linear infinite; }`}</style>
 
       <LeftSidebar
+        keepAudioBase64={keepAudioBase64}
+        setKeepAudioBase64={setKeepAudioBase64}
         undo={undo}
         redo={redo}
         historyIndex={historyIndex}

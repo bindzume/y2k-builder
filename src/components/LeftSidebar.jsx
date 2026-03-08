@@ -10,6 +10,7 @@ const LeftSidebar = ({
   addElement, pasteElement, clipboard,
   bgImage, bgImageStyle, setBgImageStyle, bgImageTileSize, setBgImageTileSize, handleBgDrop, clearBgImage,
   bgMusic, bgMusicName, bgMusicMode, setBgMusicMode, handleAudioDrop, clearBgMusic,
+  keepAudioBase64, setKeepAudioBase64, // <-- NEW PROPS HERE
   cursor, handleCursorDrop, clearCursor,
   pageTitle, setPageTitle,
   pageColor, setPageColor,
@@ -65,6 +66,7 @@ const LeftSidebar = ({
     setRenamingProjectId(null);
     setRenameValue('');
   };
+
   return (
     <div className="w-64 flex flex-col border-r-2 border-white border-r-[#808080] shadow-[inset_-2px_-2px_#ffffff,inset_2px_2px_#dfdfdf]">
       <div className="bg-gradient-to-r from-[#000080] to-[#1084d0] text-white p-1 px-2 font-bold text-sm flex items-center gap-2">
@@ -76,11 +78,7 @@ const LeftSidebar = ({
         <div className="space-y-2">
           <div className="text-xs font-bold text-gray-600 mb-1 border-b border-gray-400 pb-1 flex items-center justify-between">
             <span>PROJECTS</span>
-            <button
-              onClick={createNewProject}
-              className="text-blue-600 hover:text-blue-800"
-              title="Create new project"
-            >
+            <button onClick={createNewProject} className="text-blue-600 hover:text-blue-800" title="Create new project">
               <Plus size={14} />
             </button>
           </div>
@@ -98,10 +96,7 @@ const LeftSidebar = ({
             {showProjectList && (
               <div className="absolute top-full left-0 right-0 mt-1 bg-white border-2 border-gray-400 shadow-lg z-50 max-h-64 overflow-y-auto">
                 {projectList.map(project => (
-                  <div
-                    key={project.id}
-                    className={`flex items-center gap-1 px-2 py-1.5 hover:bg-blue-50 ${project.id === currentProjectId ? 'bg-blue-100' : ''}`}
-                  >
+                  <div key={project.id} className={`flex items-center gap-1 px-2 py-1.5 hover:bg-blue-50 ${project.id === currentProjectId ? 'bg-blue-100' : ''}`}>
                     {renamingProjectId === project.id ? (
                       <input
                         type="text"
@@ -117,31 +112,14 @@ const LeftSidebar = ({
                       />
                     ) : (
                       <>
-                        <button
-                          onClick={() => {
-                            switchProject(project.id);
-                            setShowProjectList(false);
-                          }}
-                          className="flex-1 text-left text-xs truncate min-w-0"
-                        >
+                        <button onClick={() => { switchProject(project.id); setShowProjectList(false); }} className="flex-1 text-left text-xs truncate min-w-0">
                           {project.name}
                         </button>
-                        <button
-                          onClick={() => handleRenameStart(project)}
-                          className="p-0.5 hover:bg-blue-200 rounded shrink-0 w-6 h-6 flex items-center justify-center"
-                          title="Rename project"
-                        >
+                        <button onClick={() => handleRenameStart(project)} className="p-0.5 hover:bg-blue-200 rounded shrink-0 w-6 h-6 flex items-center justify-center" title="Rename project">
                           <Pencil size={12} />
                         </button>
                         {projectList.length > 1 ? (
-                          <button
-                            onClick={() => {
-                              deleteProject(project.id);
-                              setShowProjectList(false);
-                            }}
-                            className="p-0.5 hover:bg-red-200 rounded text-red-600 shrink-0 w-6 h-6 flex items-center justify-center"
-                            title="Delete project"
-                          >
+                          <button onClick={() => { deleteProject(project.id); setShowProjectList(false); }} className="p-0.5 hover:bg-red-200 rounded text-red-600 shrink-0 w-6 h-6 flex items-center justify-center" title="Delete project">
                             <Trash2 size={12} />
                           </button>
                         ) : (
@@ -185,24 +163,14 @@ const LeftSidebar = ({
               {bgImage ? (<img src={bgImage} alt="bg" className="w-full h-12 object-cover border border-gray-400 mb-1" />) : (<div className="flex flex-col items-center py-2"><ImageIcon size={16} className="mb-1 opacity-50" /><span>Drop Background</span></div>)}
             </div>
             {bgImage && (
-              <button
-                onClick={clearBgImage}
-                className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-0.5"
-                title="Clear background image"
-              >
-                <X size={12} />
-              </button>
+              <button onClick={clearBgImage} className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-0.5" title="Clear background image"><X size={12} /></button>
             )}
           </div>
           {bgImage && (
             <div className="bg-[#f0f0f0] border border-gray-400 p-2 text-[10px] space-y-2">
               <div>
                 <label className="font-bold block mb-1">BG Style:</label>
-                <select
-                  value={bgImageStyle}
-                  onChange={(e) => setBgImageStyle(e.target.value)}
-                  className="w-full text-[10px] p-1 border border-gray-600"
-                >
+                <select value={bgImageStyle} onChange={(e) => setBgImageStyle(e.target.value)} className="w-full text-[10px] p-1 border border-gray-600">
                   <option value="cover">Cover (Fill)</option>
                   <option value="contain">Contain (Fit)</option>
                   <option value="repeat">Repeat (Small Tile)</option>
@@ -213,68 +181,51 @@ const LeftSidebar = ({
               {bgImageStyle === 'tile' && (
                 <div>
                   <label className="font-bold block mb-1">Tile Size (px):</label>
-                  <input
-                    type="number"
-                    value={bgImageTileSize}
-                    onChange={(e) => setBgImageTileSize(parseInt(e.target.value) || 200)}
-                    className="w-full text-[10px] p-1 border border-gray-600"
-                    min="10"
-                    max="1000"
-                  />
+                  <input type="number" value={bgImageTileSize} onChange={(e) => setBgImageTileSize(parseInt(e.target.value) || 200)} className="w-full text-[10px] p-1 border border-gray-600" min="10" max="1000" />
                 </div>
               )}
             </div>
           )}
+
+          {/* AUDIO DROP ZONE */}
           <div className="relative">
             <div onDragOver={e => e.preventDefault()} onDrop={handleAudioDrop} className="group relative border-2 border-dashed border-gray-500 bg-[#e0e0e0] p-2 text-center text-xs text-gray-600 hover:bg-white cursor-pointer">
               <div className="flex flex-col items-center py-2"><Music size={16} className={`mb-1 ${bgMusic ? 'text-blue-600 animate-pulse' : 'opacity-50'}`} /><span>{bgMusicName || 'Drop MP3 Audio'}</span></div>
             </div>
             {bgMusic && (
-              <button
-                onClick={clearBgMusic}
-                className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-0.5"
-                title="Clear background music"
-              >
-                <X size={12} />
-              </button>
+              <button onClick={clearBgMusic} className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-0.5" title="Clear background music"><X size={12} /></button>
             )}
           </div>
           {bgMusic && (
-            <div className="bg-[#f0f0f0] border border-gray-400 p-2 text-[10px]">
+            <div className="bg-[#f0f0f0] border border-gray-400 p-2 text-[10px] mt-1">
               <label className="font-bold block mb-1">Audio Mode:</label>
-              <div className="flex gap-1">
-                <button
-                  onClick={() => setBgMusicMode('webaudio')}
-                  className={`flex-1 px-2 py-1 border border-black text-[9px] ${bgMusicMode === 'webaudio' ? 'bg-blue-200 font-bold' : 'bg-white'}`}
-                  title="Seamless looping using Web Audio API"
-                >
-                  Seamless
-                </button>
-                <button
-                  onClick={() => setBgMusicMode('audio-tag')}
-                  className={`flex-1 px-2 py-1 border border-black text-[9px] ${bgMusicMode === 'audio-tag' ? 'bg-blue-200 font-bold' : 'bg-white'}`}
-                  title="Standard HTML5 audio tag with controls"
-                >
-                  &lt;audio&gt;
-                </button>
+              <div className="flex gap-1 mb-1">
+                <button onClick={() => setBgMusicMode('webaudio')} className={`flex-1 px-1 py-1 border border-black text-[9px] ${bgMusicMode === 'webaudio' ? 'bg-blue-200 font-bold' : 'bg-white'}`} title="Seamless looping using Web Audio API">Seamless</button>
+                <button onClick={() => setBgMusicMode('audio-tag')} className={`flex-1 px-1 py-1 border border-black text-[9px] ${bgMusicMode === 'audio-tag' ? 'bg-blue-200 font-bold' : 'bg-white'}`} title="Standard HTML5 audio tag with controls">&lt;audio&gt;</button>
               </div>
-              <div className="text-[8px] text-gray-600 mt-1">
-                {bgMusicMode === 'webaudio' ? 'Perfect loop, no gap' : 'Visible controls, slight gap'}
+              
+              {/* --- NEW CHECKBOX RIGHT HERE --- */}
+              <div className="mt-2 pt-2 border-t border-gray-400 flex items-start gap-1">
+                <input 
+                  type="checkbox" 
+                  id="keepBase64" 
+                  checked={keepAudioBase64} 
+                  onChange={(e) => setKeepAudioBase64(e.target.checked)}
+                  className="mt-0.5 cursor-pointer"
+                />
+                <label htmlFor="keepBase64" className="text-[9px] text-gray-700 leading-tight cursor-pointer" title="Embeds the audio directly into the HTML to bypass Neocities free-tier file restrictions.">
+                  Embed Base64 <br/><span className="text-[8px] text-gray-500">(Neocities Mode)</span>
+                </label>
               </div>
             </div>
           )}
+
           <div className="relative">
             <div onDragOver={e => e.preventDefault()} onDrop={handleCursorDrop} className="group relative border-2 border-dashed border-gray-500 bg-[#e0e0e0] p-2 text-center text-xs text-gray-600 hover:bg-white cursor-pointer">
               {cursor ? (<div className="flex items-center justify-center h-8"><img src={cursor} alt="cursor" className="w-6 h-6 object-contain" /></div>) : (<div className="flex flex-col items-center py-2"><MousePointer2 size={16} className="mb-1 opacity-50" /><span>Drop Cursor</span></div>)}
             </div>
             {cursor && (
-              <button
-                onClick={clearCursor}
-                className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-0.5"
-                title="Clear custom cursor"
-              >
-                <X size={12} />
-              </button>
+              <button onClick={clearCursor} className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-0.5" title="Clear custom cursor"><X size={12} /></button>
             )}
           </div>
         </div>

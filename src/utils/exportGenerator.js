@@ -288,7 +288,7 @@ export const generateExportCode = (elements, bgImage, bgImageStyle, bgImageTileS
 
     const tag = (el.type === 'hr' || el.type === 'table') ? 'div' : (el.tagName || 'div');
     if (el.href && el.type !== 'guestbook' && el.type !== 'counter') {
-      return `<a id="${el.id}" href="${el.href}" target="_blank">${content}</a>`;
+      return `<a id="${el.id}" href="${el.href}">${content}</a>`;
     }
     return `<${tag} id="${el.id}">${content}</${tag}>`;
   };

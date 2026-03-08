@@ -28,5 +28,6 @@ If you are developing a production application, we recommend using TypeScript wi
 - visual bug with marquee and links/text in canvas
 - when switching to <audio>, i see that there is a little audio widget that appears. might be best to get rid of <audio> tag altogether
 - have option to automatically resize large images in BG and in images. also maybe have file paths instead of the base64 thing im doing right now.. or could have catbox be the backend. (fixed by exporting zip folders for each page)
-- allow for exporting all projects and make the html files be named the name of the project.(in the blob, can have buttons create new blobs for each project)
-- ability for bg audio to be attached as a link. or for audio to be in base64 optionally since neocities blocks audio
+- allow for exporting all projects and make the html files be named the name of the project.(in the blob, can have buttons create new blobs for each project). 
+- ability for bg audio to be attached as a link. or for audio to be in base64 optionally since neocities blocks audio (done but we can make it be .js file instead to fix slow loading time)
+- Need to also make sure each image has a unique name or is in a unique directory inside of "images". otherwise there is overlap

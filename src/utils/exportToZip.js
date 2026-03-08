@@ -3,7 +3,7 @@ import { saveAs } from 'file-saver';
 import { generateExportCode } from './exportGenerator'; // Your existing function
 
 export const exportWebsiteAsZip = async (
-  elements, bgImage, bgImageStyle, bgImageTileSize, bgMusic, bgMusicMode, cursor, pageTitle, pageHeight, pagePadding, pageMargin, pageColor
+  elements, bgImage, bgImageStyle, bgImageTileSize, bgMusic, bgMusicMode, cursor, pageTitle, pageHeight, pagePadding, pageMargin, pageColor, keepAudioBase64 
 ) => {
   const zip = new JSZip();
   const imgFolder = zip.folder("images");
@@ -44,9 +44,12 @@ export const exportWebsiteAsZip = async (
   // 2. Process Page Cursor
   let finalCursor = processBase64File(cursor, 'cursor', 'main');
 
-  // 3. Process Page Background Music (if it's a base64 upload)
+  // 3. Process Page Background Music
   let finalBgMusic = bgMusic;
-  if (bgMusic && bgMusic.startsWith('data:audio')) {
+  
+  // IF the user unchecked the box, extract it! 
+  // IF they left it checked, ignore this block and leave it as Base64 text.
+  if (!keepAudioBase64 && bgMusic && bgMusic.startsWith('data:audio')) {
       const musicFolder = zip.folder("media");
       const [header, base64Data] = bgMusic.split(',');
       const ext = header.match(/data:audio\/([a-zA-Z0-9]+)/)?.[1] || 'mp3';
