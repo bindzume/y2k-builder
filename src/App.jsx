@@ -465,6 +465,43 @@ export default function App() {
     exportEntireSiteAsZip(projects, keepAudioBase64);
   };
 
+  const duplicateProject = (projectIdToCopy) => {
+    const projectToCopy = projects[projectIdToCopy];
+    if (!projectToCopy) return;
+
+    // Save the current project first just in case
+    if (currentProjectId) {
+      saveProject();
+    }
+
+    const newProjectId = `project_${Date.now()}`;
+    const newProjectName = `Copy of ${projectToCopy.name}`;
+
+    // Deep copy the project data so the new project doesn't accidentally edit the old one
+    const copiedData = JSON.parse(JSON.stringify(projectToCopy.data));
+    
+    // Make sure the htmlFilename gets a unique tweak too so they don't overwrite each other on export
+    copiedData.htmlFilename = `${copiedData.htmlFilename || 'index'}_copy`;
+
+    const newProject = {
+      id: newProjectId,
+      name: newProjectName,
+      data: copiedData,
+      lastModified: Date.now()
+    };
+
+    const updatedProjects = { ...projects, [newProjectId]: newProject };
+    
+    // Update state and switch to the new copied project
+    setProjects(updatedProjects);
+    setCurrentProjectId(newProjectId);
+    loadProjectData(copiedData);
+
+    // Save to localForage
+    localforage.setItem(PROJECTS_STORAGE_KEY, updatedProjects);
+    localforage.setItem(CURRENT_PROJECT_KEY, newProjectId);
+  };
+
   const handleExportJSON = () => {
     const data = getCurrentProjectData();
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -616,6 +653,7 @@ export default function App() {
 
       <LeftSidebar
         keepAudioBase64={keepAudioBase64}
+        duplicateProject={duplicateProject}
         setKeepAudioBase64={setKeepAudioBase64}
         htmlFilename={htmlFilename} // <-- ADDED
         setHtmlFilename={setHtmlFilename} // <-- ADDED

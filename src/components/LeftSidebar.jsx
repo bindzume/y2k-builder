@@ -23,7 +23,7 @@ const LeftSidebar = ({
   handleSample, handleExport, handleExportEntireSite, // <-- NEW
   handleExportJSON, handleImportJSON,
   handleExportAll, handleImportAll,
-  projects, currentProjectId, createNewProject, switchProject, renameProject, deleteProject,
+  projects, currentProjectId, createNewProject, switchProject, renameProject, deleteProject, duplicateProject
 }) => {
   const fileInputRef = useRef(null);
   const backupInputRef = useRef(null);
@@ -128,6 +128,13 @@ const LeftSidebar = ({
                         ) : (
                           <div className="w-6 h-6 shrink-0"></div>
                         )}
+                        <button 
+  onClick={() => duplicateProject(project.id)}
+  className="p-0.5 hover:bg-red-200 rounded text-red-600 shrink-0 w-6 h-6 flex items-center justify-center"
+  title="Duplicate Project"
+>
+  📋 {/* Or whatever icon you prefer! */}
+</button>
                       </>
                     )}
                   </div>

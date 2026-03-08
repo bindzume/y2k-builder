@@ -9,6 +9,9 @@ import {
 import RichTextEditor from './RichTextEditor';
 import { fileToBase64 } from '../utils/fileHelpers';
 
+
+
+
 const PropertiesPanel = ({
   selectedElement,
   updateElement,
@@ -25,6 +28,25 @@ const PropertiesPanel = ({
     setTempColor(null);
   }, [selectedElement?.id]);
 
+  // 👇 ADD THIS NEW FUNCTION 👇
+  const handleDimensionChange = (dimension, value) => {
+    const newValue = parseInt(value) || 0;
+    const updates = { [dimension]: newValue };
+
+    // If locked, calculate the aspect ratio and apply it to the counterpart
+    if (selectedElement.lockAspectRatio && selectedElement.width && selectedElement.height) {
+      const ratio = selectedElement.width / selectedElement.height;
+      
+      if (dimension === 'width') {
+        updates.height = Math.round(newValue / ratio);
+      } else if (dimension === 'height') {
+        updates.width = Math.round(newValue * ratio);
+      }
+    }
+
+    updateElement(selectedElement.id, updates);
+  };
+  
   const handleBgImageDrop = async (e) => {
     e.preventDefault();
     const file = e.dataTransfer?.files && e.dataTransfer.files[0];
