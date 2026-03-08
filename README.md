@@ -42,3 +42,6 @@ If you are developing a production application, we recommend using TypeScript wi
 
 ~~I should also have an option for each project to have images I drop in the properties panel either be base64 encoded or exported as files. So there should be another checkbox for that. (It should be either all images are base64 encoded or all exported since doing it for individual images seems complicated for the user).~~
 
+- need checkmark on element that prevents them from being a part of flexboxes.
+- need x and y coords for elements
+- marquee is still broken and stuff doesn't load in
