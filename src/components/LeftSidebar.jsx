@@ -73,7 +73,7 @@ const LeftSidebar = ({
   return (
     <div className="w-64 flex flex-col border-r-2 border-white border-r-[#808080] shadow-[inset_-2px_-2px_#ffffff,inset_2px_2px_#dfdfdf] h-screen">
       <div className="bg-gradient-to-r from-[#000080] to-[#1084d0] text-white p-1 px-2 font-bold text-sm flex items-center gap-2">
-        <Monitor size={14} /> WebBuilder 2000
+        <Monitor size={14} /> CLOUD 9
       </div>
 
       <div className="p-4 space-y-4 overflow-y-auto flex-1">
