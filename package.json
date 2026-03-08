@@ -9,8 +9,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "file-saver": "^2.0.5",
     "google-auth-library": "^10.5.0",
     "google-spreadsheet": "^5.2.0",
+    "jszip": "^3.10.1",
     "localforage": "^1.10.0",
     "lucide-react": "^0.300.0",
     "react": "^18.2.0",

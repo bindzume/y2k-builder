@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { STORAGE_KEY } from './utils/constants';
 import { fileToBase64, resizeForCursor } from './utils/fileHelpers';
 import { generateExportCode } from './utils/exportGenerator';
+import { exportWebsiteAsZip } from './utils/exportToZip';
 import LeftSidebar from './components/LeftSidebar';
 import Canvas from './components/Canvas';
 import PropertiesPanel from './components/PropertiesPanel';
@@ -460,11 +461,15 @@ export default function App() {
   };
 
   const handleExport = () => {
+    const code = exportWebsiteAsZip(elements, bgImage, bgImageStyle, bgImageTileSize, bgMusic, bgMusicMode, cursor, pageTitle, pageHeight, pagePadding, pageMargin, pageColor);
+
+    /*
     const code = generateExportCode(elements, bgImage, bgImageStyle, bgImageTileSize, bgMusic, bgMusicMode, cursor, pageTitle, pageHeight, pagePadding, pageMargin, pageColor);
     const blob = new Blob([code], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url; a.download = 'index.html'; a.click();
+    */
   };
 
   const handleExportJSON = () => {
