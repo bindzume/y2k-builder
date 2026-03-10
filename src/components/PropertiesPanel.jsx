@@ -432,7 +432,7 @@ const PropertiesPanel = ({
                     </div>
                   </div>
                 )}
-                {selectedElement.type === 'image' && (<div><label className="text-[10px] block">Image URL</label><input type="text" value={selectedElement.src || ''} onChange={(e) => updateElement(selectedElement.id, { src: e.target.value })} className="w-full text-xs p-1 border-2 border-[#808080] border-t-black border-l-black font-mono" placeholder="https://..." /></div>)}
+                {selectedElement.type === 'image' && (<div onDragOver={(e) => e.preventDefault()} onDrop={async (e) => { e.preventDefault(); const file = e.dataTransfer?.files?.[0]; if (file && file.type.startsWith('image/')) { const base64 = await fileToBase64(file); updateElement(selectedElement.id, { src: base64 }); } }}><label className="text-[10px] block">Image URL / Drop Image</label><input type="text" value={selectedElement.src || ''} onChange={(e) => updateElement(selectedElement.id, { src: e.target.value })} className="w-full text-xs p-1 border-2 border-[#808080] border-t-black border-l-black font-mono" placeholder="https://... or drop image" /></div>)}
                 {selectedElement.type === 'image' && (
   <div className="space-y-2 mb-2 pb-2 border-b border-gray-400">
     <label className="text-xs font-bold flex items-center gap-1">
@@ -510,6 +510,22 @@ const PropertiesPanel = ({
                                 <div className="flex justify-between text-[8px] mb-1"><span>Scale: {selectedElement.hoverStyle?.scale !== undefined ? selectedElement.hoverStyle.scale + 'x' : 'inherit'}</span><button onClick={() => updateElement(selectedElement.id, { hoverStyle: { ...selectedElement.hoverStyle, scale: undefined } })} className="underline text-[7px]">clear</button></div>
                                 <input type="range" min="0.5" max="2" step="0.05" value={selectedElement.hoverStyle?.scale !== undefined ? selectedElement.hoverStyle.scale : 1} onChange={(e) => updateElement(selectedElement.id, { hoverStyle: { ...selectedElement.hoverStyle, scale: parseFloat(e.target.value) } })} className="w-full h-1 bg-gray-400 rounded-lg appearance-none cursor-pointer" />
                             </div>
+                            <div onDragOver={(e) => e.preventDefault()} onDrop={async (e) => { e.preventDefault(); const file = e.dataTransfer?.files?.[0]; if (file && file.type.startsWith('image/')) { const base64 = await fileToBase64(file); updateElement(selectedElement.id, { hoverStyle: { ...selectedElement.hoverStyle, backgroundImage: base64 } }); } }}>
+                                <label className="text-[8px] block">BG Image / Drop</label>
+                                <div className="flex items-center gap-1">
+                                    <input type="text" value={selectedElement.hoverStyle?.backgroundImage || ''} onChange={(e) => updateElement(selectedElement.id, { hoverStyle: { ...selectedElement.hoverStyle, backgroundImage: e.target.value || undefined } })} placeholder="URL or drop" className="flex-1 text-[8px] p-1 border border-black font-mono" />
+                                    {selectedElement.hoverStyle?.backgroundImage && <button onClick={() => updateElement(selectedElement.id, { hoverStyle: { ...selectedElement.hoverStyle, backgroundImage: undefined } })} className="text-[8px] px-1 bg-red-200 border border-black">X</button>}
+                                </div>
+                            </div>
+                            {selectedElement.type === 'image' && (
+                                <div onDragOver={(e) => e.preventDefault()} onDrop={async (e) => { e.preventDefault(); const file = e.dataTransfer?.files?.[0]; if (file && file.type.startsWith('image/')) { const base64 = await fileToBase64(file); updateElement(selectedElement.id, { hoverStyle: { ...selectedElement.hoverStyle, src: base64 } }); } }}>
+                                    <label className="text-[8px] block">Image Src / Drop</label>
+                                    <div className="flex items-center gap-1">
+                                        <input type="text" value={selectedElement.hoverStyle?.src || ''} onChange={(e) => updateElement(selectedElement.id, { hoverStyle: { ...selectedElement.hoverStyle, src: e.target.value || undefined } })} placeholder="URL or drop" className="flex-1 text-[8px] p-1 border border-black font-mono" />
+                                        {selectedElement.hoverStyle?.src && <button onClick={() => updateElement(selectedElement.id, { hoverStyle: { ...selectedElement.hoverStyle, src: undefined } })} className="text-[8px] px-1 bg-red-200 border border-black">X</button>}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
@@ -545,6 +561,22 @@ const PropertiesPanel = ({
                                 <div className="flex justify-between text-[8px] mb-1"><span>Scale: {selectedElement.clickStyle?.scale !== undefined ? selectedElement.clickStyle.scale + 'x' : 'inherit'}</span><button onClick={() => updateElement(selectedElement.id, { clickStyle: { ...selectedElement.clickStyle, scale: undefined } })} className="underline text-[7px]">clear</button></div>
                                 <input type="range" min="0.5" max="2" step="0.05" value={selectedElement.clickStyle?.scale !== undefined ? selectedElement.clickStyle.scale : 1} onChange={(e) => updateElement(selectedElement.id, { clickStyle: { ...selectedElement.clickStyle, scale: parseFloat(e.target.value) } })} className="w-full h-1 bg-gray-400 rounded-lg appearance-none cursor-pointer" />
                             </div>
+                            <div onDragOver={(e) => e.preventDefault()} onDrop={async (e) => { e.preventDefault(); const file = e.dataTransfer?.files?.[0]; if (file && file.type.startsWith('image/')) { const base64 = await fileToBase64(file); updateElement(selectedElement.id, { clickStyle: { ...selectedElement.clickStyle, backgroundImage: base64 } }); } }}>
+                                <label className="text-[8px] block">BG Image / Drop</label>
+                                <div className="flex items-center gap-1">
+                                    <input type="text" value={selectedElement.clickStyle?.backgroundImage || ''} onChange={(e) => updateElement(selectedElement.id, { clickStyle: { ...selectedElement.clickStyle, backgroundImage: e.target.value || undefined } })} placeholder="URL or drop" className="flex-1 text-[8px] p-1 border border-black font-mono" />
+                                    {selectedElement.clickStyle?.backgroundImage && <button onClick={() => updateElement(selectedElement.id, { clickStyle: { ...selectedElement.clickStyle, backgroundImage: undefined } })} className="text-[8px] px-1 bg-red-200 border border-black">X</button>}
+                                </div>
+                            </div>
+                            {selectedElement.type === 'image' && (
+                                <div onDragOver={(e) => e.preventDefault()} onDrop={async (e) => { e.preventDefault(); const file = e.dataTransfer?.files?.[0]; if (file && file.type.startsWith('image/')) { const base64 = await fileToBase64(file); updateElement(selectedElement.id, { clickStyle: { ...selectedElement.clickStyle, src: base64 } }); } }}>
+                                    <label className="text-[8px] block">Image Src / Drop</label>
+                                    <div className="flex items-center gap-1">
+                                        <input type="text" value={selectedElement.clickStyle?.src || ''} onChange={(e) => updateElement(selectedElement.id, { clickStyle: { ...selectedElement.clickStyle, src: e.target.value || undefined } })} placeholder="URL or drop" className="flex-1 text-[8px] p-1 border border-black font-mono" />
+                                        {selectedElement.clickStyle?.src && <button onClick={() => updateElement(selectedElement.id, { clickStyle: { ...selectedElement.clickStyle, src: undefined } })} className="text-[8px] px-1 bg-red-200 border border-black">X</button>}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>

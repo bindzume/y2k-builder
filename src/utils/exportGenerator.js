@@ -141,12 +141,29 @@ export const generateExportCode = (elements, bgImage, bgImageStyle, bgImageTileS
       if (stateStyle.scale !== undefined) {
         rules.push(`transform: scale(${stateStyle.scale}) rotate(${el.rotation || 0}deg) skew(${el.skewX || 0}deg, ${el.skewY || 0}deg);`);
       }
-      if (rules.length === 0) return '';
-      return `#${el.id}${pseudo} { ${rules.join(' ')} }`;
+      if (stateStyle.backgroundImage !== undefined) {
+        rules.push(`background-image: url('${stateStyle.backgroundImage}');`);
+      }
+      let extra = '';
+      // Image src swap: hide default img, show swap img
+      if (stateStyle.src !== undefined && el.type === 'image') {
+        extra += `#${el.id}${pseudo} .img-default { opacity: 0; }`;
+        extra += `#${el.id}${pseudo} .img-swap { opacity: 1; }`;
+      }
+      if (rules.length === 0 && !extra) return '';
+      return (rules.length > 0 ? `#${el.id}${pseudo} { ${rules.join(' ')} }` : '') + extra;
     };
 
     const hoverCss = el.hoverEnabled ? generateInteractionCss(el.hoverStyle, ':hover') : '';
     const activeCss = el.clickEnabled ? generateInteractionCss(el.clickStyle, ':active') : '';
+
+    // Image src swap base styles
+    const hasImgSwap = el.type === 'image' && (el.hoverStyle?.src || el.clickStyle?.src);
+    const imgSwapCss = hasImgSwap ? `
+      #${el.id} { position: relative; }
+      #${el.id} .img-default, #${el.id} .img-swap { transition: opacity ${el.transitionDuration || 0.3}s ease; }
+      #${el.id} .img-swap { opacity: 0; position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    ` : '';
 
     return `
       #${el.id} {
@@ -179,6 +196,7 @@ export const generateExportCode = (elements, bgImage, bgImageStyle, bgImageTileS
       }
       ${hoverCss}
       ${activeCss}
+      ${imgSwapCss}
     `;
   };
 
@@ -272,7 +290,19 @@ export const generateExportCode = (elements, bgImage, bgImageStyle, bgImageTileS
         }
     } else {
         if (el.type === 'text') { content = String(el.content || ""); }
-        else if (el.type === 'image') { content = `<img src="${el.src}" alt="img" style="object-fit: cover; width: 100%; height: 100%;" />`; }
+        else if (el.type === 'image') {
+          const hasSwap = el.hoverStyle?.src || el.clickStyle?.src;
+          if (hasSwap) {
+            // Collect unique swap src values
+            const swapSrcs = new Set();
+            if (el.hoverStyle?.src) swapSrcs.add(el.hoverStyle.src);
+            if (el.clickStyle?.src) swapSrcs.add(el.clickStyle.src);
+            const swapImgs = [...swapSrcs].map(s => `<img src="${s}" alt="img" class="img-swap" />`).join('');
+            content = `<img src="${el.src}" alt="img" class="img-default" style="object-fit: cover; width: 100%; height: 100%;" />${swapImgs}`;
+          } else {
+            content = `<img src="${el.src}" alt="img" style="object-fit: cover; width: 100%; height: 100%;" />`;
+          }
+        }
         else if (el.type === 'marquee') { content = `<marquee scrollamount="5" style="width: 100%;">${String(el.content || "")}</marquee>`; }
         else if (el.type === 'button') { content = String(el.content || ""); }
         else if (el.type === 'hr') { content = ''; }
