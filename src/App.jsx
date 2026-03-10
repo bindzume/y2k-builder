@@ -587,6 +587,7 @@ export default function App() {
       width, height, zIndex: elements.length + 1, content, href: '', isBlinking: false, fullWidth: false, fullHeight: false, flexGrow: false,
       tagName: 'div', parentId: null, flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', gap: 5, rows: 2, cols: 2,
       rotation: 0, skewX: 0, skewY: 0, opacity: 1, blinkSpeed: 1,
+      hoverEnabled: false, hoverStyle: {}, clickEnabled: false, clickStyle: {}, transitionDuration: 0.3,
       src: type === 'image' ? null : null, style: baseStyle, ...customProps
     };
     saveToHistory([...elements, newElement]);

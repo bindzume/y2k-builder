@@ -4,7 +4,8 @@ import {
   AlignHorizontalJustifyCenter, AlignVerticalJustifyCenter, LogOut,
   ArrowUpFromLine, BoxSelect, RotateCw, Type, AlignLeft, AlignCenter,
   AlignRight, AlignJustify, ArrowUpToLine, ArrowDownToLine, AlignCenterVertical,
-  Zap, Copy, Bold, Italic, Underline, Strikethrough, Palette, ArrowUp
+  Zap, Copy, Bold, Italic, Underline, Strikethrough, Palette, ArrowUp,
+  MousePointer, MousePointerClick
 } from 'lucide-react';
 import RichTextEditor from './RichTextEditor';
 import { fileToBase64 } from '../utils/fileHelpers';
@@ -473,6 +474,88 @@ const PropertiesPanel = ({
                     <input type="checkbox" id="fullWidthToggle" checked={selectedElement.fullWidth || false} onChange={(e) => updateElement(selectedElement.id, { fullWidth: e.target.checked })} />
                     <label htmlFor="fullWidthToggle" className="text-xs font-bold flex items-center gap-1"><Maximize2 size={10} /> Full Width?</label>
                 </div>
+            </div>
+            {/* INTERACTION STATES */}
+            <div className="space-y-2 mt-2 pt-2 border-t border-gray-400">
+                <label className="text-xs font-bold flex items-center gap-1"><MousePointer size={12}/> Interactions</label>
+
+                {/* ON HOVER */}
+                <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                        <label className="text-[10px] font-bold flex items-center gap-1"><MousePointer size={10}/> On Hover</label>
+                        <input type="checkbox" checked={selectedElement.hoverEnabled || false} onChange={(e) => updateElement(selectedElement.id, { hoverEnabled: e.target.checked })} />
+                    </div>
+                    {selectedElement.hoverEnabled && (
+                        <div className="space-y-2 p-2 border border-gray-400 bg-gray-100 rounded">
+                            <div className="flex gap-2 items-center">
+                                <label className="text-[8px] w-10">BG:</label>
+                                <input type="color" value={(selectedElement.hoverStyle?.backgroundColor && selectedElement.hoverStyle.backgroundColor !== 'transparent') ? selectedElement.hoverStyle.backgroundColor : '#ffffff'} onChange={(e) => updateElement(selectedElement.id, { hoverStyle: { ...selectedElement.hoverStyle, backgroundColor: e.target.value } })} className="h-5 flex-1 border border-black p-0" />
+                                <button onClick={() => updateElement(selectedElement.id, { hoverStyle: { ...selectedElement.hoverStyle, backgroundColor: undefined } })} className="text-[8px] px-1 bg-gray-300 border border-gray-500">Clear</button>
+                            </div>
+                            <div className="flex gap-2 items-center">
+                                <label className="text-[8px] w-10">Text:</label>
+                                <input type="color" value={selectedElement.hoverStyle?.color || '#000000'} onChange={(e) => updateElement(selectedElement.id, { hoverStyle: { ...selectedElement.hoverStyle, color: e.target.value } })} className="h-5 flex-1 border border-black p-0" />
+                                <button onClick={() => updateElement(selectedElement.id, { hoverStyle: { ...selectedElement.hoverStyle, color: undefined } })} className="text-[8px] px-1 bg-gray-300 border border-gray-500">Clear</button>
+                            </div>
+                            <div className="flex gap-2 items-center">
+                                <label className="text-[8px] w-10">Border:</label>
+                                <input type="color" value={selectedElement.hoverStyle?.borderColor || '#000000'} onChange={(e) => updateElement(selectedElement.id, { hoverStyle: { ...selectedElement.hoverStyle, borderColor: e.target.value } })} className="h-5 flex-1 border border-black p-0" />
+                                <button onClick={() => updateElement(selectedElement.id, { hoverStyle: { ...selectedElement.hoverStyle, borderColor: undefined } })} className="text-[8px] px-1 bg-gray-300 border border-gray-500">Clear</button>
+                            </div>
+                            <div>
+                                <div className="flex justify-between text-[8px] mb-1"><span>Opacity: {selectedElement.hoverStyle?.opacity !== undefined ? Math.round(selectedElement.hoverStyle.opacity * 100) + '%' : 'inherit'}</span><button onClick={() => updateElement(selectedElement.id, { hoverStyle: { ...selectedElement.hoverStyle, opacity: undefined } })} className="underline text-[7px]">clear</button></div>
+                                <input type="range" min="0" max="1" step="0.05" value={selectedElement.hoverStyle?.opacity !== undefined ? selectedElement.hoverStyle.opacity : (selectedElement.opacity === undefined ? 1 : selectedElement.opacity)} onChange={(e) => updateElement(selectedElement.id, { hoverStyle: { ...selectedElement.hoverStyle, opacity: parseFloat(e.target.value) } })} className="w-full h-1 bg-gray-400 rounded-lg appearance-none cursor-pointer" />
+                            </div>
+                            <div>
+                                <div className="flex justify-between text-[8px] mb-1"><span>Scale: {selectedElement.hoverStyle?.scale !== undefined ? selectedElement.hoverStyle.scale + 'x' : 'inherit'}</span><button onClick={() => updateElement(selectedElement.id, { hoverStyle: { ...selectedElement.hoverStyle, scale: undefined } })} className="underline text-[7px]">clear</button></div>
+                                <input type="range" min="0.5" max="2" step="0.05" value={selectedElement.hoverStyle?.scale !== undefined ? selectedElement.hoverStyle.scale : 1} onChange={(e) => updateElement(selectedElement.id, { hoverStyle: { ...selectedElement.hoverStyle, scale: parseFloat(e.target.value) } })} className="w-full h-1 bg-gray-400 rounded-lg appearance-none cursor-pointer" />
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* ON CLICK */}
+                <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                        <label className="text-[10px] font-bold flex items-center gap-1"><MousePointerClick size={10}/> On Click</label>
+                        <input type="checkbox" checked={selectedElement.clickEnabled || false} onChange={(e) => updateElement(selectedElement.id, { clickEnabled: e.target.checked })} />
+                    </div>
+                    {selectedElement.clickEnabled && (
+                        <div className="space-y-2 p-2 border border-gray-400 bg-gray-100 rounded">
+                            <div className="flex gap-2 items-center">
+                                <label className="text-[8px] w-10">BG:</label>
+                                <input type="color" value={(selectedElement.clickStyle?.backgroundColor && selectedElement.clickStyle.backgroundColor !== 'transparent') ? selectedElement.clickStyle.backgroundColor : '#ffffff'} onChange={(e) => updateElement(selectedElement.id, { clickStyle: { ...selectedElement.clickStyle, backgroundColor: e.target.value } })} className="h-5 flex-1 border border-black p-0" />
+                                <button onClick={() => updateElement(selectedElement.id, { clickStyle: { ...selectedElement.clickStyle, backgroundColor: undefined } })} className="text-[8px] px-1 bg-gray-300 border border-gray-500">Clear</button>
+                            </div>
+                            <div className="flex gap-2 items-center">
+                                <label className="text-[8px] w-10">Text:</label>
+                                <input type="color" value={selectedElement.clickStyle?.color || '#000000'} onChange={(e) => updateElement(selectedElement.id, { clickStyle: { ...selectedElement.clickStyle, color: e.target.value } })} className="h-5 flex-1 border border-black p-0" />
+                                <button onClick={() => updateElement(selectedElement.id, { clickStyle: { ...selectedElement.clickStyle, color: undefined } })} className="text-[8px] px-1 bg-gray-300 border border-gray-500">Clear</button>
+                            </div>
+                            <div className="flex gap-2 items-center">
+                                <label className="text-[8px] w-10">Border:</label>
+                                <input type="color" value={selectedElement.clickStyle?.borderColor || '#000000'} onChange={(e) => updateElement(selectedElement.id, { clickStyle: { ...selectedElement.clickStyle, borderColor: e.target.value } })} className="h-5 flex-1 border border-black p-0" />
+                                <button onClick={() => updateElement(selectedElement.id, { clickStyle: { ...selectedElement.clickStyle, borderColor: undefined } })} className="text-[8px] px-1 bg-gray-300 border border-gray-500">Clear</button>
+                            </div>
+                            <div>
+                                <div className="flex justify-between text-[8px] mb-1"><span>Opacity: {selectedElement.clickStyle?.opacity !== undefined ? Math.round(selectedElement.clickStyle.opacity * 100) + '%' : 'inherit'}</span><button onClick={() => updateElement(selectedElement.id, { clickStyle: { ...selectedElement.clickStyle, opacity: undefined } })} className="underline text-[7px]">clear</button></div>
+                                <input type="range" min="0" max="1" step="0.05" value={selectedElement.clickStyle?.opacity !== undefined ? selectedElement.clickStyle.opacity : (selectedElement.opacity === undefined ? 1 : selectedElement.opacity)} onChange={(e) => updateElement(selectedElement.id, { clickStyle: { ...selectedElement.clickStyle, opacity: parseFloat(e.target.value) } })} className="w-full h-1 bg-gray-400 rounded-lg appearance-none cursor-pointer" />
+                            </div>
+                            <div>
+                                <div className="flex justify-between text-[8px] mb-1"><span>Scale: {selectedElement.clickStyle?.scale !== undefined ? selectedElement.clickStyle.scale + 'x' : 'inherit'}</span><button onClick={() => updateElement(selectedElement.id, { clickStyle: { ...selectedElement.clickStyle, scale: undefined } })} className="underline text-[7px]">clear</button></div>
+                                <input type="range" min="0.5" max="2" step="0.05" value={selectedElement.clickStyle?.scale !== undefined ? selectedElement.clickStyle.scale : 1} onChange={(e) => updateElement(selectedElement.id, { clickStyle: { ...selectedElement.clickStyle, scale: parseFloat(e.target.value) } })} className="w-full h-1 bg-gray-400 rounded-lg appearance-none cursor-pointer" />
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* TRANSITION DURATION (shared) */}
+                {(selectedElement.hoverEnabled || selectedElement.clickEnabled) && (
+                    <div>
+                        <div className="flex justify-between text-[8px] mb-1"><span>Transition: {selectedElement.transitionDuration}s</span></div>
+                        <input type="range" min="0" max="2" step="0.05" value={selectedElement.transitionDuration} onChange={(e) => updateElement(selectedElement.id, { transitionDuration: parseFloat(e.target.value) })} className="w-full h-1 bg-gray-400 rounded-lg appearance-none cursor-pointer" />
+                    </div>
+                )}
             </div>
             </>
         )}

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link as LinkIcon } from 'lucide-react';
+import { Link as LinkIcon, MousePointer, MousePointerClick } from 'lucide-react';
 import placeholder from '../assets/400x400.png';
 const StaticElement = ({ element, globalSelectedId, onSelect, onUpdate, allElements }) => {
   const isSelected = element.id === globalSelectedId;
@@ -252,6 +252,12 @@ const StaticElement = ({ element, globalSelectedId, onSelect, onUpdate, allEleme
       {element.href && element.type !== 'counter' && (
         <div className="absolute top-0 right-0 p-0.5 bg-blue-600 z-50">
            <LinkIcon size={8} className="text-white" />
+        </div>
+      )}
+      {(element.hoverEnabled || element.clickEnabled) && (
+        <div className="absolute top-0 left-0 flex gap-0 z-50">
+           {element.hoverEnabled && <div className="p-0.5 bg-purple-600"><MousePointer size={8} className="text-white" /></div>}
+           {element.clickEnabled && <div className="p-0.5 bg-orange-600"><MousePointerClick size={8} className="text-white" /></div>}
         </div>
       )}
       {isSelected && (

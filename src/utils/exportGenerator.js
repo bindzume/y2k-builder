@@ -126,6 +126,28 @@ export const generateExportCode = (elements, bgImage, bgImageStyle, bgImageTileS
         ? `${el.style.textShadowX || 2}px ${el.style.textShadowY || 2}px ${el.style.textShadowBlur || 0}px ${el.style.textShadowColor || '#000000'}`
         : 'none';
 
+    const hasInteractions = el.hoverEnabled || el.clickEnabled;
+    const transitionCss = hasInteractions ? `transition: all ${el.transitionDuration}s ease;` : '';
+
+    const generateInteractionCss = (stateStyle, pseudo) => {
+      if (!stateStyle || Object.keys(stateStyle).every(k => stateStyle[k] === undefined)) return '';
+      let rules = [];
+      if (stateStyle.backgroundColor !== undefined) rules.push(`background-color: ${stateStyle.backgroundColor};`);
+      if (stateStyle.color !== undefined) rules.push(`color: ${stateStyle.color}; -webkit-text-fill-color: ${stateStyle.color};`);
+      if (stateStyle.borderColor !== undefined) {
+        rules.push(`border-color: ${stateStyle.borderColor};`);
+      }
+      if (stateStyle.opacity !== undefined) rules.push(`opacity: ${stateStyle.opacity};`);
+      if (stateStyle.scale !== undefined) {
+        rules.push(`transform: scale(${stateStyle.scale}) rotate(${el.rotation || 0}deg) skew(${el.skewX || 0}deg, ${el.skewY || 0}deg);`);
+      }
+      if (rules.length === 0) return '';
+      return `#${el.id}${pseudo} { ${rules.join(' ')} }`;
+    };
+
+    const hoverCss = el.hoverEnabled ? generateInteractionCss(el.hoverStyle, ':hover') : '';
+    const activeCss = el.clickEnabled ? generateInteractionCss(el.clickStyle, ':active') : '';
+
     return `
       #${el.id} {
         box-sizing: border-box;
@@ -152,8 +174,11 @@ export const generateExportCode = (elements, bgImage, bgImageStyle, bgImageTileS
         transform: rotate(${el.rotation || 0}deg) skew(${el.skewX || 0}deg, ${el.skewY || 0}deg);
         opacity: ${el.opacity || 1};
         ${el.isBlinking ? `animation: blinker ${el.blinkSpeed || 1}s linear infinite;` : ''}
+        ${transitionCss}
         ${extraCss}
       }
+      ${hoverCss}
+      ${activeCss}
     `;
   };
 
